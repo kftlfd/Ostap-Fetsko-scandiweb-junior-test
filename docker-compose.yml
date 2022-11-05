@@ -1,0 +1,32 @@
+version: "3"
+
+services:
+  php:
+    image: php-apache:dev
+    build:
+      context: .
+      dockerfile: php.dev.Dockerfile
+    env_file:
+      - ./backend/db.env
+    ports:
+      - 80:80
+
+  mysql:
+    image: mysql:5.7-debian
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+    env_file:
+      - ./backend/db.env
+    volumes:
+      - ./backend/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - db:/var/lib/mysql
+
+  adminer:
+    image: adminer:4.8.1
+    restart: always
+    ports:
+      - 8080:8080
+
+volumes:
+  db:

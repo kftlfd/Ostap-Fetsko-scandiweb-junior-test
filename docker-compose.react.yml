@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+  react:
+    image: react:dev
+    build:
+      context: .
+      dockerfile: react.Dockerfile
+    ports:
+      - 5173:5173
+    volumes:
+      - ./frontend:/app

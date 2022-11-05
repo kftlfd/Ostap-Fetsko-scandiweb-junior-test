@@ -1,0 +1,145 @@
+$bg: #fff;
+$text: #333;
+$border: 1px solid $text;
+
+:root {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+
+  color: $text;
+  background-color: $bg;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  padding-inline: max(1rem, calc((100vw - 1000px) / 2));
+}
+
+#root {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+h3 {
+  text-align: center;
+}
+
+header,
+main,
+footer {
+  padding-inline: 0.5rem;
+}
+
+header {
+  padding-block: 2rem 1rem;
+  border-bottom: $border;
+  display: flex;
+  align-items: flex-end;
+
+  .heading {
+    flex-grow: 1;
+    margin: 0;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 1rem;
+  }
+}
+
+main {
+  padding-block: 2rem;
+  flex-grow: 1;
+}
+
+footer {
+  padding-block: 1rem;
+  border-top: $border;
+  text-align: center;
+}
+
+.btn {
+  display: grid;
+  place-content: center;
+  padding: 0.2rem 0.5rem;
+  border: $border;
+  border-radius: 0;
+  box-shadow: 3px 3px 0 0 $text;
+  translate: -3px -3px;
+
+  background-color: $bg;
+  color: $text;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: normal;
+  text-decoration: none;
+  cursor: pointer;
+
+  transition: all 0.1s ease;
+
+  &:hover {
+    background-color: #eee;
+  }
+
+  &:active {
+    background-color: #ddd;
+    translate: 0 0;
+    box-shadow: 0 0 0 0 $text;
+  }
+
+  &.loading {
+    background-color: #bbb;
+    cursor: default;
+  }
+}
+
+.addForm {
+  display: grid;
+  grid-template-columns: max-content auto;
+  column-gap: 2rem;
+  row-gap: 1rem;
+}
+
+.productGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+
+  @media screen and (min-width: 500px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media screen and (min-width: 700px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  @media screen and (min-width: 900px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.product {
+  padding: 1rem 1rem 3rem;
+  text-align: center;
+  border: $border;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+
+  .delete-checkbox {
+    align-self: flex-start;
+  }
+
+  p {
+    margin: 0;
+  }
+}

@@ -1,0 +1,8 @@
+version: "3"
+
+services:
+  php:
+    image: php-apache:prod
+    build:
+      context: .
+      dockerfile: php.prod.Dockerfile
