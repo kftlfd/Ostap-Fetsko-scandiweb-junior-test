@@ -6,19 +6,19 @@ abstract class Base
 {
   protected $methods = [];
 
-  public function process_request()
+  public function processRequest()
   {
-    $this->set_headers();
+    $this->setHeaders();
     try {
-      $method = $this->get_request_method();
-      $handler = "handle_" . $method;
+      $method = $this->getRequestMethod();
+      $handler = "handle" . $method;
       $this->$handler();
     } catch (\Throwable $err) {
       $this->respond($err->getMessage(), 500);
     }
   }
 
-  protected function set_headers()
+  protected function setHeaders()
   {
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: ' . join(", ", $this->methods));
@@ -26,21 +26,21 @@ abstract class Base
     header('Content-Type: application/json');
   }
 
-  protected function get_request_method()
+  protected function getRequestMethod()
   {
     $method = $_SERVER["REQUEST_METHOD"];
     if (!in_array($method, $this->methods)) {
-      $this->respond_bad_request("Supported request methods: " . join(", ", $this->methods));
+      $this->respondBadRequest("Supported request methods: " . join(", ", $this->methods));
     }
     return $method;
   }
 
-  protected function get_request_body()
+  protected function getRequestBody()
   {
     try {
       return json_decode(file_get_contents('php://input'));
     } catch (\Throwable $th) {
-      $this->respond_bad_request("Invalid JSON in request body.");
+      $this->respondBadRequest("Invalid JSON in request body.");
     }
   }
 
@@ -51,7 +51,7 @@ abstract class Base
     exit;
   }
 
-  protected function respond_bad_request($data)
+  protected function respondBadRequest($data)
   {
     $this->respond($data, 400);
   }

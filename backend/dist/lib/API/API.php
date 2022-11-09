@@ -11,7 +11,7 @@ class API extends Base
     $this->db = new \DB\Products();
   }
 
-  public function handle_OPTIONS()
+  public function handleOPTIONS()
   {
     $this->respond([
       "OPTIONS" => "Get list of supported request methods and expected inputs.",
@@ -29,41 +29,41 @@ class API extends Base
     ]);
   }
 
-  public function handle_GET()
+  public function handleGET()
   {
-    $this->respond($this->db->list_all());
+    $this->respond($this->db->listAll());
   }
 
-  public function handle_POST()
+  public function handlePOST()
   {
-    $product_map = $this->get_request_body();
-    if (!is_object($product_map)) $this->respond_bad_request("Input must be an object.");
+    $productMap = $this->getRequestBody();
+    if (!is_object($productMap)) $this->respondBadRequest("Input must be an object.");
 
-    $product_map = get_object_vars($product_map);
-    if (empty($product_map)) $this->respond_bad_request("Input is empty.");
+    $productMap = get_object_vars($productMap);
+    if (empty($productMap)) $this->respondBadRequest("Input is empty.");
 
-    $created = $this->db->add_product($product_map);
+    $created = $this->db->addProduct($productMap);
     if (!isset($created)) {
       $this->respond("Failed to insert new product", 500);
     } else if (is_array($created)) {
       // validation errors
-      $this->respond_bad_request($created);
+      $this->respondBadRequest($created);
     }
 
-    $this->respond($this->db->get_by_id($created));
+    $this->respond($this->db->getById($created));
   }
 
-  public function handle_DELETE()
+  public function handleDELETE()
   {
-    $ids = $this->get_request_body();
-    if (!is_array($ids) || empty($ids) || !$this->is_integer_array($ids)) {
-      $this->respond_bad_request("Array of integers (product ids) is expected");
+    $ids = $this->getRequestBody();
+    if (!is_array($ids) || empty($ids) || !$this->isIntegerArray($ids)) {
+      $this->respondBadRequest("Array of integers (product ids) is expected");
     }
-    $this->db->delete_ids($ids);
+    $this->db->deleteIds($ids);
     $this->respond(null, 201);
   }
 
-  private function is_integer_array($arr)
+  private function isIntegerArray($arr)
   {
     foreach ($arr as $val) {
       if (!is_int($val)) return false;

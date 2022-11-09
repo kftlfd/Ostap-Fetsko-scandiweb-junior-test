@@ -2,6 +2,8 @@
 
 namespace DB;
 
+use PDO;
+
 abstract class Table
 {
   protected $conn = null;
@@ -16,42 +18,42 @@ abstract class Table
 
   function __construct()
   {
-    $db_host = getenv("MYSQL_HOST");
-    $db_name = getenv("MYSQL_DATABASE");
-    $db_user = getenv("MYSQL_USER");
-    $db_pass = getenv("MYSQL_PASSWORD");
+    $dbHost = getenv("MYSQL_HOST");
+    $dbName = getenv("MYSQL_DATABASE");
+    $dbUser = getenv("MYSQL_USER");
+    $dbPass = getenv("MYSQL_PASSWORD");
 
     // default values
-    if (empty($db_host)) $db_host = "host";
-    if (empty($db_name)) $db_name = "database";
-    if (empty($db_user)) $db_user = "user";
-    if (empty($db_pass)) $db_pass = "password";
+    if (empty($dbHost)) $dbHost = "host";
+    if (empty($dbName)) $dbName = "database";
+    if (empty($dbUser)) $dbUser = "user";
+    if (empty($dbPass)) $dbPass = "password";
 
-    $this->conn = new \PDO(
-      "mysql:host=$db_host;dbname=$db_name",
-      $db_user,
-      $db_pass,
+    $this->conn = new PDO(
+      "mysql:host=$dbHost;dbname=$dbName",
+      $dbUser,
+      $dbPass,
       [
-        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
       ]
     );
 
-    $this->field_names = array_keys($this->schema);
+    $this->fieldNames = array_keys($this->schema);
   }
 
   //
   // Data operations
   //
 
-  public function select_all()
+  public function selectAll()
   {
     $query = "SELECT * FROM $this->table";
     $data = $this->conn->query($query)->fetchAll();
     return $data;
   }
 
-  public function select_where($field, $value)
+  public function selectWhere($field, $value)
   {
     if (is_string($value)) $value = "'$value'";
     $query = "SELECT * FROM $this->table WHERE $field = $value";
@@ -59,7 +61,7 @@ abstract class Table
     return $data;
   }
 
-  public function delete_ids($ids)
+  public function deleteIds($ids)
   {
     $query = "DELETE FROM $this->table WHERE id=:id";
     $smt = $this->conn->prepare($query);
@@ -70,21 +72,21 @@ abstract class Table
     $this->conn->commit();
   }
 
-  public function create($entry_map)
+  public function create($entryMap)
   {
     // check input
-    if (empty($entry_map)) throw new \Exception("Empty input");
-    $validation_errors = $this->validate_entry($entry_map);
-    if (!empty($validation_errors)) return $validation_errors;
+    if (empty($entryMap)) throw new \Exception("Empty input");
+    $validationErrors = $this->validateEntry($entryMap);
+    if (!empty($validationErrors)) return $validationErrors;
 
     // sanitize entry
-    $new_entry = $this->sanitize_entry($entry_map);
+    $newEntry = $this->sanitizeEntry($entryMap);
 
     // insert to db
-    $fields = array_keys($new_entry);
-    $query = $this->build_insert_query($fields);
+    $fields = array_keys($newEntry);
+    $query = $this->buildInsertQuery($fields);
     $smt = $this->conn->prepare($query);
-    $smt->execute($new_entry);
+    $smt->execute($newEntry);
     return $this->conn->lastInsertId();
   }
 
@@ -92,26 +94,26 @@ abstract class Table
   // Helpers
   //
 
-  function validate_entry($entry_map)
+  function validateEntry($entryMap)
   {
     $errors = [];
-    $table_fields = $this->field_names;
+    $tableFields = $this->fieldNames;
 
     // check fields in entry against field_names
-    $entry_fields = array_keys($entry_map);
-    foreach ($entry_fields as $field) {
-      if (!in_array($field, $table_fields)) {
+    $entryFields = array_keys($entryMap);
+    foreach ($entryFields as $field) {
+      if (!in_array($field, $tableFields)) {
         $errors[$field] = "Field '$field' is not in the database.";
       }
     }
 
     // check entry data types against table scheme
-    foreach ($table_fields as $field) {
+    foreach ($tableFields as $field) {
       $required = $this->schema[$field]["required"];
       $types = $this->schema[$field]["types"];
       $values = $this->schema[$field]["values"];
 
-      $val = $entry_map[$field];
+      $val = $entryMap[$field];
       $type = gettype($val);
 
       if (!isset($val)) {
@@ -134,29 +136,29 @@ abstract class Table
     return $errors;
   }
 
-  protected function sanitize_entry($entry_map)
+  protected function sanitizeEntry($entryMap)
   {
-    $keys = array_keys($entry_map);
+    $keys = array_keys($entryMap);
     foreach ($keys as $key) {
-      $val = $entry_map[$key];
+      $val = $entryMap[$key];
       if (is_string($val)) {
         $val = strip_tags($val);
         $val = htmlspecialchars($val);
         $val = stripslashes($val);
         $val = trim($val);
       }
-      $entry_map[$key] = $val;
+      $entryMap[$key] = $val;
     }
-    return $entry_map;
+    return $entryMap;
   }
 
-  protected function build_insert_query($fields)
+  protected function buildInsertQuery($fields)
   {
     $q1 = ["INSERT INTO $this->table ("];
-    $q_fields = \Utilities::insert_commas($fields);
+    $qFields = \Utilities::insert_commas($fields);
     $q2 = [") VALUES ("];
-    $q_values = array_map("\Utilities::prepend_colon", $q_fields);
+    $qValues = array_map("\Utilities::prepend_colon", $qFields);
     $q3 = [")"];
-    return implode(array_merge($q1, $q_fields, $q2, $q_values, $q3));
+    return implode(array_merge($q1, $qFields, $q2, $qValues, $q3));
   }
 }

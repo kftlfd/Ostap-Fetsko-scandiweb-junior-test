@@ -7,4 +7,4 @@ spl_autoload_register(function ($className) {
 });
 
 $api = new \API\API();
-$api->process_request();
+$api->processRequest();
