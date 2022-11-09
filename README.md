@@ -22,7 +22,13 @@ Starts MySQL, Adminer (for database management, at http://localhost:8080), Apach
 $ docker compose up -d
 ```
 
-### Frontend only (requires Node.js)
+### Frontend only
+
+```
+$ docker compose -f docker-compose.react.yml up -d
+```
+
+Or run natively (Node.js required)
 
 ```
 $ cd frontend
@@ -44,7 +50,7 @@ Creates a frontend build and places it alongside php files in Apache server, sta
 
   - MySQL root password in `docker-compose.yml`.
   - Database environment variables in `backend/db.env`
-  - _Optionally_: default values for connection to database in `backend/lib/db.php`
+  - _Optionally_: default values for connection to database in `backend/dist/lib/DB/Table.php`
 
 - If have modified Dockerfile(s), don't forget to rebuild the images:
 
