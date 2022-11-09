@@ -2,9 +2,6 @@
 
 namespace API;
 
-require_once __DIR__ . "/" . "../Autoloader.php";
-\Autoloader::register("../");
-
 abstract class Base
 {
   protected $methods = [];

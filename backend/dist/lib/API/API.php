@@ -2,9 +2,6 @@
 
 namespace API;
 
-require_once __DIR__ . "/" . "../Autoloader.php";
-\Autoloader::register("../");
-
 class API extends Base
 {
   protected $methods = ["OPTIONS", "GET", "POST", "DELETE"];
@@ -47,7 +44,7 @@ class API extends Base
 
     $created = $this->db->add_product($product_map);
     if (!isset($created)) {
-      respond("Failed to insert new product", 500);
+      $this->respond("Failed to insert new product", 500);
     } else if (is_array($created)) {
       // validation errors
       $this->respond_bad_request($created);

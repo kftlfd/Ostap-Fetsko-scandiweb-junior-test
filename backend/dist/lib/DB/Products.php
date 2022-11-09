@@ -2,9 +2,6 @@
 
 namespace DB;
 
-require_once __DIR__ . "/" . "../Autoloader.php";
-\Autoloader::register("../");
-
 class Products extends Table
 {
   protected $table = "products";
@@ -59,7 +56,7 @@ class Products extends Table
   private function validate_sku($product_map)
   {
     $sku = $product_map["sku"];
-    if (!isset($sku)) {
+    if (!isset($sku) || empty($sku)) {
       return "Product must have a 'sku'";
     }
 
