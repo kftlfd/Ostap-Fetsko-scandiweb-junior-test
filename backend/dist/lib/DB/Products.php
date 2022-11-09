@@ -78,15 +78,14 @@ class Products extends Table
 
     $categories = array_keys($this->fields_by_category);
     if (!in_array($type, $categories)) {
-      return "Supported product types: " .
-        implode(\Utilities::insert_commas($categories));
+      return "Supported product types: " . join(", ", $categories);
     }
 
     $product_keys = array_keys($product_map);
     foreach ($this->fields_by_category[$type] as $field) {
       if (!in_array($field, $product_keys)) {
         return "Product of type '$type' must have these fields: " .
-          implode(\Utilities::insert_commas($this->fields_by_category[$type]));
+          join(", ", $this->fields_by_category[$type]);
       }
     }
   }

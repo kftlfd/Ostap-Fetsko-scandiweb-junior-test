@@ -16,11 +16,6 @@ class Utilities
     return self::insert_separators($array, ", ");
   }
 
-  static function insert_pipes($array)
-  {
-    return self::insert_separators($array, " | ");
-  }
-
   static function prepend_colon($str)
   {
     return ":" . $str;

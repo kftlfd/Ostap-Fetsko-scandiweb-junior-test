@@ -23,6 +23,9 @@ abstract class Base
 
   protected function set_headers()
   {
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: ' . join(", ", $this->methods));
+    header('Access-Control-Allow-Headers: X-Requested-With');
     header('Content-Type: application/json');
   }
 
@@ -30,8 +33,7 @@ abstract class Base
   {
     $method = $_SERVER["REQUEST_METHOD"];
     if (!in_array($method, $this->methods)) {
-      $this->respond_bad_request("Supported request methods: " .
-        implode(\Utilities::insert_commas($this->methods)));
+      $this->respond_bad_request("Supported request methods: " . join(", ", $this->methods));
     }
     return $method;
   }

@@ -124,13 +124,13 @@ abstract class Table
 
       if (!in_array($type, $types)) {
         $errors[$field] = "Value for field '$field' should be of type: " .
-          implode(\Utilities::insert_pipes($types));
+          join(" | ", $types);
         continue;
       }
 
       if (!empty($values) && !in_array($val, $values)) {
         $errors[$field] = "Value for field '$field' should be one of: " .
-          implode(\Utilities::insert_commas($values));
+          join(", ", $values);
       }
     }
 
