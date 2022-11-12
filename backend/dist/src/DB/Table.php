@@ -1,8 +1,9 @@
 <?php
 
-namespace DB;
+namespace src\DB;
 
 use PDO;
+use src\Utilities;
 
 abstract class Table
 {
@@ -149,9 +150,9 @@ abstract class Table
     protected function buildInsertQuery($fields)
     {
         $q1 = ["INSERT INTO $this->table ("];
-        $qFields = \Utilities::insert_commas($fields);
+        $qFields = Utilities::insert_commas($fields);
         $q2 = [") VALUES ("];
-        $qValues = array_map("\Utilities::prepend_colon", $qFields);
+        $qValues = array_map("Utilities::prepend_colon", $qFields);
         $q3 = [")"];
         return implode(array_merge($q1, $qFields, $q2, $qValues, $q3));
     }

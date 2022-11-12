@@ -1,6 +1,6 @@
 <?php
 
-namespace DB;
+namespace src\DB;
 
 class Products extends Table
 {

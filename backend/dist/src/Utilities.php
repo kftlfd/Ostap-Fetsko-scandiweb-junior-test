@@ -1,5 +1,7 @@
 <?php
 
+namespace src;
+
 class Utilities
 {
     public static function insert_separators($array, string $sep)

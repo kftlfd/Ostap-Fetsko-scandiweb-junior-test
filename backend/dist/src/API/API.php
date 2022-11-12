@@ -1,6 +1,8 @@
 <?php
 
-namespace API;
+namespace src\API;
+
+use src\DB\Products;
 
 class API extends Base
 {
@@ -8,7 +10,7 @@ class API extends Base
 
     public function __construct()
     {
-        $this->db = new \DB\Products();
+        $this->db = new Products();
     }
 
     protected function handleOPTIONS()
