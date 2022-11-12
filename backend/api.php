@@ -1,12 +1,7 @@
 <?php
 
-use src\API\API;
+require __DIR__ . '/vendor/autoload.php';
 
-spl_autoload_register(function ($className) {
-    $file = str_replace("\\", DIRECTORY_SEPARATOR, $className) . ".php";
-    if (file_exists($file)) require $file;
-});
-
-$api = new API();
+$api = new src\API\API();
 
 $api->processRequest();
