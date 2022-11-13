@@ -1,0 +1,5 @@
+backend/db.env
+backend/schema.sql
+
+frontend/dist
+frontend/node_modules

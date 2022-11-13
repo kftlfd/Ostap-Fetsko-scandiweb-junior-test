@@ -3,4 +3,4 @@ version: "3"
 services:
   php:
     volumes:
-      - ./backend/dist:/var/www/html
+      - ./backend:/var/www/html
