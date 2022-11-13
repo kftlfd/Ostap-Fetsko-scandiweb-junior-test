@@ -9,5 +9,6 @@ COPY ./backend .
 COPY --from=composer/composer:latest-bin /composer /usr/bin/composer
 RUN docker-php-ext-install pdo pdo_mysql && \
     a2enmod rewrite && \
-    composer install
+    composer install && \
+    rm composer.json composer.lock
 COPY --from=frontend /app/dist /var/www/html
