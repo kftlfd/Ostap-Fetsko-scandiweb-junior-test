@@ -1,56 +1,59 @@
-const baseUrl =
+import axios, { AxiosError } from "axios";
+
+const apiUrl =
   process.env.NODE_ENV === "production"
     ? `${window.location.origin}/api/`
     : `${window.location.protocol}//${window.location.hostname}/api/`;
 
-const listUrl = baseUrl + "list.php";
-const deleteUrl = baseUrl + "delete.php";
-const addUrl = baseUrl + "add.php";
-
-export type ProductType = "DVD" | "Furniture" | "Book";
+export type ProductCategory = "DVD" | "Furniture" | "Book";
 
 export type ProductInfo = {
-  id: string;
+  id: number;
   sku: string;
   name: string;
-  price: string;
-  type: ProductType;
-  size?: string;
-  width?: string;
-  height?: string;
-  length?: string;
-  weight?: string;
+  price: number;
+  type: ProductCategory;
+  size?: number;
+  width?: number;
+  height?: number;
+  length?: number;
+  weight?: number;
 };
 
-export async function listQuery(): Promise<ProductInfo[]> {
-  const res = await fetch(listUrl, {
-    method: "GET",
-  });
-  if (res.ok) {
-    return await res.json();
-  } else {
-    throw new Error(await res.text());
+export async function getProductsList() {
+  try {
+    const res = await axios.get<ProductInfo[]>(apiUrl);
+    return res.data;
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      throw new Error(err.response?.data);
+    } else {
+      throw new Error("Unknown error: " + err);
+    }
   }
 }
 
-export async function deleteQuery(body: number[]) {
-  const res = await fetch(deleteUrl, {
-    method: "DELETE",
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    throw new Error(await res.text());
+export async function deleteProducts(ids: number[]) {
+  try {
+    const res = await axios.delete(apiUrl, { data: ids });
+    return res.data;
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      throw new Error(err.response?.data);
+    } else {
+      throw new Error("Unknown error: " + err);
+    }
   }
 }
 
-export async function addQuery(body: any) {
-  const res = await fetch(addUrl, {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
-  if (res.ok) {
-    return await res.json();
-  } else {
-    throw new Error(await res.text());
+export async function addProduct(body: any) {
+  try {
+    await axios.post(apiUrl, body);
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      return err.response?.data;
+    } else {
+      throw new Error("Unknown error");
+    }
   }
 }

@@ -1,8 +1,13 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import type { ProductInfo } from "./api";
-import { listQuery, deleteQuery } from "./api";
+import { getProductsList, deleteProducts } from "./api";
+
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  currency: "USD",
+  style: "currency",
+});
 
 export default function List() {
   const [loading, setLoading] = useState(true);
@@ -11,17 +16,20 @@ export default function List() {
 
   useEffect(() => {
     document.title = "Product List";
+    fetchProducts();
+  }, []);
 
-    listQuery()
+  function fetchProducts() {
+    getProductsList()
       .then((res) => {
-        setData(res.sort((a, b) => Number(b.id) - Number(a.id)));
+        setData(res.sort((a, b) => b.id - a.id));
         setLoading(false);
       })
       .catch((err: Error) => {
         setError(err.message);
         console.error(err);
       });
-  }, []);
+  }
 
   function handleDelete() {
     let deleteIds: number[] = [];
@@ -32,18 +40,17 @@ export default function List() {
       }
     });
 
-    deleteQuery(deleteIds)
-      .then(() =>
-        setData((prev) => {
-          console.log(prev);
-          const filtered = prev.filter(
-            (p) => !deleteIds.includes(Number(p.id))
-          );
-          console.log(filtered);
-          return filtered;
-        })
+    deleteProducts(deleteIds)
+      .then(
+        // refresh
+        () => setData((prev) => prev.filter((p) => !deleteIds.includes(p.id)))
       )
       .catch((err) => console.error(err));
+  }
+
+  function refresh() {
+    setLoading(true);
+    fetchProducts();
   }
 
   return (
@@ -51,6 +58,9 @@ export default function List() {
       <header>
         <h1 className="heading">Product List</h1>
         <div className="buttons">
+          <button className="btn" onClick={refresh}>
+            Refresh
+          </button>
           <Link to="/add-product" className="btn">
             ADD
           </Link>
@@ -74,16 +84,16 @@ export default function List() {
                   className={"delete-checkbox"}
                   value={p.id}
                 />
-                <p>{p.sku}</p>
-                <p>{p.name}</p>
-                <p>{p.price} $</p>
-                {p.type === "DVD" && <p>Size: {p.size} MB</p>}
+                <div>{p.sku}</div>
+                <div>{p.name}</div>
+                <div>{currencyFormatter.format(p.price)}</div>
+                {p.type === "DVD" && <div>Size: {p.size} MB</div>}
                 {p.type === "Furniture" && (
-                  <p>
+                  <div>
                     Dimensions: {p.width}x{p.height}x{p.length}
-                  </p>
+                  </div>
                 )}
-                {p.type === "Book" && <p>Weight: {p.weight}KG</p>}
+                {p.type === "Book" && <div>Weight: {p.weight}KG</div>}
               </div>
             ))}
           </div>

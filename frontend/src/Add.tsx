@@ -1,25 +1,16 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { addQuery } from "./api";
+import type { ProductInfo } from "./api";
+import { addProduct } from "./api";
 
-type ProductType = "DVD" | "Furniture" | "Book";
-
-type FormData = {
-  sku: string;
-  name: string;
-  price: number;
-  type: ProductType;
-  size?: number;
-  width?: number;
-  height?: number;
-  length?: number;
-  weight?: number;
-};
+type ProductCategory = ProductInfo["type"];
+type FormData = Omit<ProductInfo, "id">;
 
 export default function Add() {
   const navigate = useNavigate();
-  const [productType, setProductType] = useState<ProductType>("DVD");
+  const [productType, setProductType] = useState<ProductCategory>("DVD");
+  const [formErrors, setFormErrors] = useState({});
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -33,27 +24,30 @@ export default function Add() {
     const data: FormData = {
       sku: form.skuField.value,
       name: form.nameField.value,
-      price: form.priceField.value,
+      price: Number(form.priceField.value),
       type: productType,
     };
 
     switch (productType) {
       case "DVD":
-        data.size = form.sizeField.value;
+        data.size = Number(form.sizeField.value);
         break;
       case "Furniture":
-        data.width = form.widthField.value;
-        data.height = form.heightField.value;
-        data.length = form.lengthField.value;
+        data.width = Number(form.widthField.value);
+        data.height = Number(form.heightField.value);
+        data.length = Number(form.lengthField.value);
         break;
       case "Book":
-        data.weight = form.weightField.value;
+        data.weight = Number(form.weightField.value);
         break;
     }
 
-    console.log(data);
-    addQuery(data)
-      .then(() => navigate("/"))
+    // console.log(data);
+    addProduct(data)
+      .then((res) => {
+        if (!res) navigate("/");
+        else setFormErrors(res);
+      })
       .catch((err) => console.error(err));
   }
 
@@ -77,15 +71,18 @@ export default function Add() {
           formRef={formRef}
           setProductType={setProductType}
         />
+        <div>
+          <pre>{JSON.stringify(formErrors)}</pre>
+        </div>
       </main>
     </>
   );
 }
 
 function Form(props: {
-  productType: ProductType;
+  productType: ProductCategory;
   formRef: React.RefObject<HTMLFormElement>;
-  setProductType: (s: ProductType) => void;
+  setProductType: (s: ProductCategory) => void;
 }) {
   return (
     <form id="product_form" ref={props.formRef} className="addForm">
