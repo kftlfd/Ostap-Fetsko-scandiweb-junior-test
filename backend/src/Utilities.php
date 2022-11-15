@@ -22,4 +22,12 @@ class Utilities
     {
         return ":" . $str;
     }
+
+    public static function isIntegerArray(&$arr)
+    {
+        foreach ($arr as $val) {
+            if (!is_int($val)) return false;
+        }
+        return true;
+    }
 }

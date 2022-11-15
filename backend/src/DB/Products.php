@@ -2,28 +2,30 @@
 
 namespace src\DB;
 
+use src\DB\ValidationError;
+
 class Products extends Table
 {
     protected $table = "products";
 
     protected $schema = [
-        "id" => ["types" => ["integer"]],
-        "sku" => ["types" => ["string"], "required" => true],
-        "name" => ["types" => ["string"], "required" => true],
-        "price" => ["types" => ["integer", "double"], "required" => true],
+        "id" => [self::SCHEMA_TYPE => self::TYPE_NUMERIC],
+        "sku" => [self::SCHEMA_TYPE => self::TYPE_STRING, self::SCHEMA_REQUIRED => true],
+        "name" => [self::SCHEMA_TYPE => self::TYPE_STRING, self::SCHEMA_REQUIRED => true],
+        "price" => [self::SCHEMA_TYPE => self::TYPE_NUMERIC, self::SCHEMA_REQUIRED => true],
         "type" => [
-            "required" => true,
-            "types" => ["string"],
-            "values" => ["DVD", "Furniture", "Book"]
+            self::SCHEMA_REQUIRED => true,
+            self::SCHEMA_TYPE => self::TYPE_STRING,
+            self::SCHEMA_VALUES => ["DVD", "Furniture", "Book"]
         ],
-        "size" => ["types" => ["integer", "double"]],
-        "width" => ["types" => ["integer", "double"]],
-        "height" => ["types" => ["integer", "double"]],
-        "length" => ["types" => ["integer", "double"]],
-        "weight" => ["types" => ["integer", "double"]]
+        "size" => [self::SCHEMA_TYPE => self::TYPE_NUMERIC],
+        "width" => [self::SCHEMA_TYPE => self::TYPE_NUMERIC],
+        "height" => [self::SCHEMA_TYPE => self::TYPE_NUMERIC],
+        "length" => [self::SCHEMA_TYPE => self::TYPE_NUMERIC],
+        "weight" => [self::SCHEMA_TYPE => self::TYPE_NUMERIC]
     ];
 
-    protected $basicFields = ["id", "sku", "name", "price", "type"];
+    protected $fieldsBasic = ["id", "sku", "name", "price", "type"];
 
     protected $fieldsByCategory = [
         "DVD" => ["size"],
@@ -31,17 +33,14 @@ class Products extends Table
         "Book" => ["weight"]
     ];
 
-    protected function pruneProduct($product)
+    //
+    // Data operations
+    //
+
+    public function getById($id)
     {
-        foreach (array_keys($product) as $key) {
-            if (
-                !in_array($key, $this->fieldsByCategory[$product["type"]]) &&
-                !in_array($key, $this->basicFields)
-            ) {
-                unset($product[$key]);
-            }
-        }
-        return $product;
+        $product = $this->selectWhere("id", $id)[0];
+        return $this->pruneProduct($product);
     }
 
     public function listAll()
@@ -51,65 +50,97 @@ class Products extends Table
         return $products;
     }
 
-    public function getById($id)
+    public function create($productMap)
     {
-        $product = $this->selectWhere("id", $id)[0];
-        return $this->pruneProduct($product);
+        if (!is_object($productMap)) {
+            throw new ValidationError(["error" => "Request body must be a valid JSON object."]);
+        }
+
+        $productMap = get_object_vars($productMap);
+        $this->validateSKU($productMap);
+        $this->validateCategoryFields($productMap);
+
+        $newProductId = parent::create($productMap);
+        $newProduct = $this->getById($newProductId);
+        return $newProduct;
+    }
+
+    //
+    // Helpers
+    //
+
+    protected function pruneProduct($product)
+    {
+        foreach (array_keys($product) as $key) {
+            if (
+                !in_array($key, $this->fieldsByCategory[$product["type"]]) &&
+                !in_array($key, $this->fieldsBasic)
+            ) {
+                unset($product[$key]);
+            }
+        }
+        return $product;
+    }
+
+    public function toJSON($product)
+    {
+        $json = "{";
+        foreach ($product as $key => $val) {
+            $json .= "\"$key\"" . ":";
+            $json .= $this->schema[$key]["type"] === "string" ? "\"$val\"" : $val;
+            $json .= ",";
+        }
+        $json = rtrim($json, ",") . "}";
+        return $json;
+    }
+
+    public function toJSONList($products)
+    {
+        $json = "[";
+        foreach ($products as $product) {
+            $json .= $this->toJSON($product) . ",";
+        }
+        $json = rtrim($json, ",") . "]";
+        return $json;
     }
 
     protected function validateSKU($productMap)
     {
         $sku = $productMap["sku"];
-        if (!isset($sku) || empty($sku)) {
-            return "Product must have a 'sku'";
+        if (empty($sku)) {
+            $this->validationErrors["sku"] = "Product must have a 'sku'";
+            return;
         }
 
         $inDB = $this->selectWhere("sku", $sku);
         if (!empty($inDB)) {
-            return "Product SKU must be unique, SKU '$sku' is already in database";
+            $this->validationErrors["sku"] = "Product SKU must be unique, SKU '$sku' is already in database";
         }
     }
 
     protected function validateCategoryFields($productMap)
     {
         $type = $productMap["type"];
-        if (!isset($type)) {
-            return "Product must have a 'type'";
+        if (empty($type)) {
+            $this->validationErrors["type"] = "Product must have a 'type'";
+            return;
         }
 
         $categories = array_keys($this->fieldsByCategory);
         if (!in_array($type, $categories)) {
-            return "Supported product types: " . join(", ", $categories);
+            $this->validationErrors["type"] = "Supported product types: " . join(", ", $categories);
+            return;
         }
 
         $productKeys = array_keys($productMap);
         foreach ($this->fieldsByCategory[$type] as $field) {
+            $fieldType = $this->schema[$field][self::SCHEMA_TYPE];
+            $typeCheck = "is_" . $fieldType;
             if (!in_array($field, $productKeys)) {
-                return "Product of type '$type' must have these fields: " .
-                    join(", ", $this->fieldsByCategory[$type]);
+                $this->validationErrors[$field] = "Field '$field' is required for type '$type'";
+            } elseif (!$typeCheck($productMap[$field])) {
+                $this->validationErrors[$field] = "Value for field '$field' should be of type '$fieldType'";
             }
-        }
-    }
-
-    public function addProduct($productMap)
-    {
-        $invalidSKU = $this->validateSKU($productMap);
-        if (isset($invalidSKU)) return ["sku" => $invalidSKU];
-
-        $invalidCategory = $this->validateCategoryFields($productMap);
-        if (isset($invalidCategory)) return ["type" => $invalidCategory];
-
-        $result = $this->create($productMap);
-
-        if (is_array($result)) {
-            // got validation errors
-            return $result;
-        } else if (is_bool($result)) {
-            // failed to insert
-            return;
-        } else {
-            // successful insertion, got row id
-            return $result;
         }
     }
 }

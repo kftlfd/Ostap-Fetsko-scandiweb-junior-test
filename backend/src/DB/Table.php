@@ -7,15 +7,29 @@ use src\Utilities;
 
 abstract class Table
 {
+    protected const SCHEMA_TYPE = "type";
+    protected const SCHEMA_REQUIRED = "required";
+    protected const SCHEMA_VALUES = "values";
+    protected const TYPE_STRING = "string";
+    protected const TYPE_NUMERIC = "numeric";
+
     protected $conn = null;
 
     protected $table = "table-name";
 
     protected $schema = [
-        "field1" => ["types" => ["string"]],
-        "field2" => ["types" => ["integer", "double"], "required" => "true"],
-        "field3" => ["types" => ["string"], "values" => ["value1", "value2"]],
+        "field1" => [self::SCHEMA_TYPE => self::TYPE_STRING],
+        "field2" => [
+            self::SCHEMA_TYPE => self::TYPE_NUMERIC,
+            self::SCHEMA_REQUIRED => true
+        ],
+        "field3" => [
+            self::SCHEMA_TYPE => self::TYPE_STRING,
+            self::SCHEMA_VALUES => ["value1", "value2"]
+        ],
     ];
+
+    protected $validationErrors = [];
 
     public function __construct()
     {
@@ -33,8 +47,6 @@ abstract class Table
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
             ]
         );
-
-        $this->fieldNames = array_keys($this->schema);
     }
 
     //
@@ -56,8 +68,30 @@ abstract class Table
         return $data;
     }
 
+    public function create($entryMap)
+    {
+        $this->validateEntry($entryMap);
+        $newEntry = $this->sanitizeEntry($entryMap);
+
+        $fields = array_keys($newEntry);
+        $query = $this->buildInsertQuery($fields);
+
+        $smt = $this->conn->prepare($query);
+        $smt->execute($newEntry);
+
+        return $this->conn->lastInsertId();
+    }
+
     public function deleteIds($ids)
     {
+        if (
+            !is_array($ids) ||
+            empty($ids) ||
+            !Utilities::isIntegerArray($ids)
+        ) {
+            throw new ValidationError(["error" => "Request body must be a valid JSON array of integers"]);
+        }
+
         $query = "DELETE FROM $this->table WHERE id=:id";
         $smt = $this->conn->prepare($query);
         $this->conn->beginTransaction();
@@ -67,68 +101,50 @@ abstract class Table
         $this->conn->commit();
     }
 
-    public function create($entryMap)
-    {
-        // check input
-        if (empty($entryMap)) throw new \Exception("Empty input");
-        $validationErrors = $this->validateEntry($entryMap);
-        if (!empty($validationErrors)) return $validationErrors;
-
-        // sanitize entry
-        $newEntry = $this->sanitizeEntry($entryMap);
-
-        // insert to db
-        $fields = array_keys($newEntry);
-        $query = $this->buildInsertQuery($fields);
-        $smt = $this->conn->prepare($query);
-        $smt->execute($newEntry);
-        return $this->conn->lastInsertId();
-    }
-
     //
     // Helpers
     //
 
     protected function validateEntry($entryMap)
     {
-        $errors = [];
-        $tableFields = $this->fieldNames;
+        $tableFields = array_keys($this->schema);
 
         // check fields in entry against field_names
         $entryFields = array_keys($entryMap);
         foreach ($entryFields as $field) {
             if (!in_array($field, $tableFields)) {
-                $errors[$field] = "Field '$field' is not in the database.";
+                $this->validationErrors[$field] = "Field '$field' is not in the table schema.";
             }
         }
 
         // check entry data types against table scheme
         foreach ($tableFields as $field) {
-            $required = $this->schema[$field]["required"];
-            $types = $this->schema[$field]["types"];
-            $values = $this->schema[$field]["values"];
+            $type = $this->schema[$field][self::SCHEMA_TYPE];
+            $required = $this->schema[$field][self::SCHEMA_REQUIRED];
+            $values = $this->schema[$field][self::SCHEMA_VALUES];
 
+            $typeCheck = "is_" . $type;
             $val = $entryMap[$field];
-            $type = gettype($val);
 
-            if (!isset($val)) {
-                if ($required) $errors[$field] = "Field '$field' is required.";
+            if (empty($val) && !is_numeric($val)) {
+                if ($required) $this->validationErrors[$field] = "Field '$field' is required.";
                 continue;
             }
 
-            if (!in_array($type, $types)) {
-                $errors[$field] = "Value for field '$field' should be of type: " .
-                    join(" | ", $types);
+            // if (!in_array($type, $types)) {
+            if (!$typeCheck($val)) {
+                $this->validationErrors[$field] = "Value for field '$field' should be of type: $type";
                 continue;
             }
 
             if (!empty($values) && !in_array($val, $values)) {
-                $errors[$field] = "Value for field '$field' should be one of: " .
-                    join(", ", $values);
+                $this->validationErrors[$field] = "Value for field '$field' should be one of: " . join(", ", $values);
             }
         }
 
-        return $errors;
+        if (!empty($this->validationErrors)) {
+            throw new ValidationError($this->validationErrors);
+        }
     }
 
     protected function sanitizeEntry($entryMap)
@@ -152,7 +168,7 @@ abstract class Table
         $q1 = ["INSERT INTO $this->table ("];
         $qFields = Utilities::insert_commas($fields);
         $q2 = [") VALUES ("];
-        $qValues = array_map("Utilities::prepend_colon", $qFields);
+        $qValues = array_map("src\Utilities::prepend_colon", $qFields);
         $q3 = [")"];
         return implode(array_merge($q1, $qFields, $q2, $qValues, $q3));
     }
