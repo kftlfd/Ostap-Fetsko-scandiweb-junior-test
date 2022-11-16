@@ -42,6 +42,9 @@ footer {
 header {
   padding-block: 2rem 1rem;
   border-bottom: $border;
+  background-color: $bg;
+  position: sticky;
+  top: 0;
   display: flex;
   justify-content: space-between;
   gap: 1rem;
@@ -156,6 +159,15 @@ footer {
   grid-template-columns: max-content auto;
   column-gap: 2rem;
   row-gap: 1rem;
+
+  .formInput {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .formError {
+    color: red;
+  }
 }
 
 .productGrid {
