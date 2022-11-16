@@ -43,15 +43,64 @@ header {
   padding-block: 2rem 1rem;
   border-bottom: $border;
   display: flex;
-  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
 
   .heading {
-    flex-grow: 1;
     margin: 0;
+  }
+
+  .middle {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+
+    .refresh-btn {
+      display: grid;
+      place-content: center;
+      aspect-ratio: 1;
+      height: 2rem;
+      background-color: transparent;
+      border: none;
+      border-radius: 100%;
+      position: relative;
+      padding: 0;
+      cursor: pointer;
+      transition: all 0.4s ease;
+
+      &::before,
+      &::after {
+        content: "";
+        display: block;
+      }
+
+      &::before {
+        height: 0.7rem;
+        aspect-ratio: 1;
+        border: 4px solid gray;
+        border-right-color: transparent;
+        border-radius: 100%;
+      }
+
+      &::after {
+        border: 7px solid transparent;
+        border-top-color: gray;
+
+        position: absolute;
+        top: 8px;
+        right: 0;
+        rotate: -45deg;
+      }
+
+      &:hover {
+        background-color: #eee;
+      }
+    }
   }
 
   .buttons {
     display: flex;
+    align-items: flex-end;
     gap: 1rem;
   }
 }
@@ -111,35 +160,22 @@ footer {
 
 .productGrid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1rem;
-
-  @media screen and (min-width: 500px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  @media screen and (min-width: 700px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  @media screen and (min-width: 900px) {
-    grid-template-columns: repeat(4, 1fr);
-  }
 }
 
 .product {
-  padding: 1rem 1rem 3rem;
-  text-align: center;
+  padding: 1rem 1rem 2rem;
   border: $border;
   border-radius: 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.3rem;
+  text-align: center;
 
   .delete-checkbox {
-    align-self: flex-start;
-  }
-
-  p {
     margin: 0;
+    align-self: flex-start;
   }
 }

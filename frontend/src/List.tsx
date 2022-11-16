@@ -40,10 +40,11 @@ export default function List() {
       }
     });
 
+    if (deleteIds.length < 1) return;
+
     deleteProducts(deleteIds)
-      .then(
-        // refresh
-        () => setData((prev) => prev.filter((p) => !deleteIds.includes(p.id)))
+      .then(() =>
+        setData((prev) => prev.filter((p) => !deleteIds.includes(p.id)))
       )
       .catch((err) => console.error(err));
   }
@@ -57,10 +58,10 @@ export default function List() {
     <>
       <header>
         <h1 className="heading">Product List</h1>
+        <div className="middle">
+          <button className="refresh-btn" onClick={refresh} />
+        </div>
         <div className="buttons">
-          <button className="btn" onClick={refresh}>
-            Refresh
-          </button>
           <Link to="/add-product" className="btn">
             ADD
           </Link>
