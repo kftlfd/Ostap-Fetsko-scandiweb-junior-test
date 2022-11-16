@@ -70,8 +70,8 @@ abstract class Table
 
     public function create($entryMap)
     {
-        $this->validateEntry($entryMap);
         $newEntry = $this->sanitizeEntry($entryMap);
+        $this->validateEntry($newEntry);
 
         $fields = array_keys($newEntry);
         $query = $this->buildInsertQuery($fields);
