@@ -33,10 +33,10 @@ abstract class Table
 
     public function __construct()
     {
-        $dbHost = getenv("MYSQL_HOST") ?: "default_host";
-        $dbName = getenv("MYSQL_DATABASE") ?: "default_database";
-        $dbUser = getenv("MYSQL_USER") ?: "default_user";
-        $dbPass = getenv("MYSQL_PASSWORD") ?: "default_password";
+        $dbHost = $_ENV["MYSQL_HOST"];
+        $dbName = $_ENV["MYSQL_DATABASE"];
+        $dbUser = $_ENV["MYSQL_USER"];
+        $dbPass = $_ENV["MYSQL_PASSWORD"];
 
         $this->conn = new PDO(
             "mysql:host=$dbHost;dbname=$dbName",
