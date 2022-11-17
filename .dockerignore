@@ -1,5 +1,4 @@
-backend/db.env
-backend/schema.sql
+backend/config/schema.sql
 backend/vendor
 
 frontend/dist
