@@ -26,7 +26,7 @@ export default function List() {
         setLoading(false);
       })
       .catch((err: Error) => {
-        setError(err.message);
+        setError("Failed to load");
         console.error(err);
       });
   }
