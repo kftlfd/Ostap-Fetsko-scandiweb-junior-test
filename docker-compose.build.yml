@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  web:
+    image: app/build
+    build:
+      context: .
+      dockerfile: app.build.Dockerfile
+    volumes:
+      - ./dist:/dist
+    command: cp -r /var/www/html/. /dist/

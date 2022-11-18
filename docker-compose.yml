@@ -1,15 +1,15 @@
 version: "3"
 
 services:
-  php:
-    image: php-apache:dev
+  web:
+    image: app/dev
     build:
       context: .
-      dockerfile: php.dev.Dockerfile
-    env_file:
-      - ./backend/db.env
+      dockerfile: app.dev.Dockerfile
     ports:
       - 80:80
+    volumes:
+      - ./backend:/var/www/html
 
   mysql:
     image: mysql:5.7-debian
@@ -17,16 +17,10 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: rootpass
     env_file:
-      - ./backend/db.env
+      - ./backend/config/db.env
     volumes:
-      - ./backend/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ./backend/config/schema.sql:/docker-entrypoint-initdb.d/schema.sql
       - db:/var/lib/mysql
-
-  adminer:
-    image: adminer:4.8.1
-    restart: always
-    ports:
-      - 8080:8080
 
 volumes:
   db:
