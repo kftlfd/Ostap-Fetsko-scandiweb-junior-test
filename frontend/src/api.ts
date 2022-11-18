@@ -5,7 +5,8 @@ const apiUrl =
     ? `${window.location.origin}/api/`
     : `${window.location.protocol}//${window.location.hostname}/api/`;
 
-export type ProductCategory = "DVD" | "Furniture" | "Book";
+export const productCategories = ["DVD", "Furniture", "Book"] as const;
+export type ProductCategory = typeof productCategories[number];
 
 export type ProductInfo = {
   id: number;
