@@ -1,240 +1,247 @@
-import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React from "react";
+import type { NavigateFunction } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-import type { ProductInfo } from "./api";
-import { addProduct } from "./api";
+import type { ProductInfo, ProductCategory } from "./api";
+import { productCategories, addProduct } from "./api";
 
-type ProductCategory = ProductInfo["type"];
 type FormData = Omit<ProductInfo, "id">;
-type Override<T, O> = { [P in keyof T]: O };
+
+type FormFields = Required<Omit<FormData, "type">>;
+type Choose<T, O> = { [P in keyof O]: O[P] extends T ? P : never }[keyof O];
+type FormTextField = Choose<string, FormFields>;
+type FormNumberField = Choose<number, FormFields>;
+
+type Override<O, T> = { [P in keyof O]: T };
 type FormErrors = Override<Partial<FormData>, string>;
 
-export default function Add() {
-  const navigate = useNavigate();
-  const [error, setError] = useState<null | string>(null);
-  const [productType, setProductType] = useState<ProductCategory>("DVD");
-  const [formErrors, setFormErrors] = useState<FormErrors>({});
-  const formRef = useRef<HTMLFormElement>(null);
+type FormEl = HTMLFormElement & Override<FormData, { value: string }>;
 
-  useEffect(() => {
+type CategoryFields = { [P in ProductCategory]: () => React.ReactNode };
+
+type AddProps = {
+  navigate: NavigateFunction;
+};
+
+type AddState = {
+  error: null | string;
+  category: ProductCategory;
+  formErrors: FormErrors;
+};
+
+export default class Add extends React.Component<AddProps, AddState> {
+  formRef: React.RefObject<FormEl>;
+
+  constructor(props: AddProps) {
+    super(props);
+    this.state = {
+      error: null,
+      category: "DVD",
+      formErrors: {},
+    };
+    this.formRef = React.createRef();
+  }
+
+  componentDidMount(): void {
     document.title = "Product Add";
-  }, []);
+  }
 
-  function submitForm() {
-    const form = formRef.current;
+  handleSubmit = () => {
+    const form = this.formRef.current;
     if (!form) return;
 
+    // sanitize
+    form.sku.value = form.sku.value.trim();
+    form.name.value = form.name.value.trim();
+
+    // validate
     if (!form.checkValidity()) {
       form.reportValidity();
       return;
     }
 
-    const data: FormData = {
-      sku: form.skuField.value,
-      name: form.nameField.value,
-      price: Number(form.priceField.value),
-      type: productType,
-    };
+    const fd = new FormData(form);
+    const data = Object.fromEntries(fd);
 
-    switch (productType) {
-      case "DVD":
-        data.size = Number(form.sizeField.value);
-        break;
-      case "Furniture":
-        data.width = Number(form.widthField.value);
-        data.height = Number(form.heightField.value);
-        data.length = Number(form.lengthField.value);
-        break;
-      case "Book":
-        data.weight = Number(form.weightField.value);
-        break;
-    }
-
-    // console.log(data);
     addProduct(data)
       .then((res) => {
-        if (!res) navigate("/");
-        else setFormErrors(res);
+        if (!res) this.props.navigate("/");
+        else this.setState({ formErrors: res });
       })
       .catch((err: Error) => {
-        setError(err.message);
+        this.setState({ error: "Error: " + err.message });
         console.error(err);
       });
-  }
+  };
 
-  return (
+  getTextField = (
+    field: FormTextField,
+    label: string,
+    options: {
+      required?: boolean;
+      placeholder?: string;
+      pattern?: string;
+      title?: string;
+    } = {
+      required: true,
+    }
+  ) => (
     <>
-      <header>
-        <h1 className="heading">Product Add</h1>
-        <div className="buttons">
-          <button className="btn" onClick={submitForm}>
-            Save
-          </button>
-          <Link to="/" className="btn">
-            Cancel
-          </Link>
-        </div>
-      </header>
+      <label htmlFor={field}>{label}</label>
 
-      <main>
-        <Form
-          productType={productType}
-          formRef={formRef}
-          formErrors={formErrors}
-          setProductType={setProductType}
-        />
-        {error && <h3>{error}</h3>}
-      </main>
-    </>
-  );
-}
-
-function Form(props: {
-  productType: ProductCategory;
-  formRef: React.RefObject<HTMLFormElement>;
-  formErrors: FormErrors;
-  setProductType: (s: ProductCategory) => void;
-}) {
-  return (
-    <form id="product_form" ref={props.formRef} className="addForm">
-      <label htmlFor="skuField">SKU</label>
-      <div className="formInput">
-        <input id="sku" name="skuField" type="text" required />
-        {props.formErrors.sku && (
-          <div className="formError">{props.formErrors.sku}</div>
-        )}
-      </div>
-
-      <label htmlFor="nameField">Name</label>
-      <div className="formInput">
-        <input id="name" name="nameField" type="text" required />
-        {props.formErrors.name && (
-          <div className="formError">{props.formErrors.name}</div>
-        )}
-      </div>
-
-      <label htmlFor="priceField">Price</label>
       <div className="formInput">
         <input
-          id="price"
-          name="priceField"
-          type="number"
-          min={0}
-          step={0.01}
-          required
+          id={field}
+          name={field}
+          type="text"
+          {...(options.placeholder && { placeholder: options.placeholder })}
+          {...(options.pattern && { pattern: options.pattern })}
+          {...(options.title && { title: options.title })}
+          {...(options.required && { required: options.required })}
         />
-        {props.formErrors.price && (
-          <div className="formError">{props.formErrors.price}</div>
+
+        {this.state.formErrors[field] && (
+          <div className="formError">{this.state.formErrors[field]}</div>
         )}
       </div>
+    </>
+  );
 
-      <label htmlFor="productType">Type Switcher</label>
+  getNumberField = (
+    field: FormNumberField,
+    label: string,
+    options: {
+      required?: boolean;
+      min?: number;
+      max?: number;
+      step?: number;
+      defVal?: number;
+      title?: string;
+    } = {
+      min: 0,
+      step: 0.01,
+      required: true,
+    }
+  ) => (
+    <>
+      <label htmlFor={field}>{label}</label>
+
       <div className="formInput">
-        {props.formErrors.type && (
-          <div className="formError">{props.formErrors.type}</div>
+        <input
+          id={field}
+          name={field}
+          type="number"
+          {...(options.min && { min: options.min })}
+          {...(options.max && { max: options.max })}
+          {...(options.step && { step: options.step })}
+          {...(options.defVal && { defaultValue: options.defVal })}
+          {...(options.title && { title: options.title })}
+          {...(options.required && { required: true })}
+        />
+
+        {this.state.formErrors[field] && (
+          <div className="formError">{this.state.formErrors[field]}</div>
         )}
-        <select id="productType" name="productType" defaultValue="DVD">
-          <option value="DVD" onClick={() => props.setProductType("DVD")}>
-            DVD
-          </option>
-          <option
-            value="Furniture"
-            onClick={() => props.setProductType("Furniture")}
-          >
-            Furniture
-          </option>
-          <option value="Book" onClick={() => props.setProductType("Book")}>
-            Book
-          </option>
-        </select>
       </div>
+    </>
+  );
 
-      {props.productType === "DVD" && (
-        <>
-          <label htmlFor="sizeField">Size (MB)</label>
-          <div className="formInput">
-            <input
-              id="size"
-              name="sizeField"
-              type="number"
-              min={0}
-              step={0.1}
-              required
-            />
-            {props.formErrors.size && (
-              <div className="formError">{props.formErrors.size}</div>
-            )}
-          </div>
-        </>
-      )}
+  getCategoryOptions = () => (
+    <>
+      <label htmlFor="productType">Type Switcher</label>
 
-      {props.productType === "Furniture" && (
-        <>
-          <label htmlFor="heightField">Hight (CM)</label>
-          <div className="formInput">
-            <input
-              id="height"
-              name="heightField"
-              type="number"
-              min={0}
-              step={0.01}
-              required
-            />
-            {props.formErrors.height && (
-              <div className="formError">{props.formErrors.height}</div>
-            )}
-          </div>
+      <div className="formInput">
+        <select
+          id="productType"
+          name="type"
+          defaultValue={productCategories[0]}
+        >
+          {productCategories.map((id: ProductCategory) => (
+            <option
+              key={id}
+              value={id}
+              onClick={() => this.setState({ category: id })}
+            >
+              {id}
+            </option>
+          ))}
+        </select>
 
-          <label htmlFor="widthField">Width (CM)</label>
-          <div className="formInput">
-            <input
-              id="width"
-              name="widthField"
-              type="number"
-              min={0}
-              step={0.01}
-              required
-            />
-            {props.formErrors.width && (
-              <div className="formError">{props.formErrors.width}</div>
-            )}
-          </div>
+        {this.state.formErrors.type && (
+          <div className="formError">{this.state.formErrors.type}</div>
+        )}
+      </div>
+    </>
+  );
 
-          <label htmlFor="lengthField">Length (CM)</label>
-          <div className="formInput">
-            <input
-              id="length"
-              name="lengthField"
-              type="number"
-              min={0}
-              step={0.01}
-              required
-            />
-            {props.formErrors.length && (
-              <div className="formError">{props.formErrors.length}</div>
-            )}
-          </div>
-        </>
-      )}
+  renderForm = () => (
+    <form id="product_form" className="addForm" ref={this.formRef}>
+      {this.getTextField("sku", "SKU")}
+      {this.getTextField("name", "Name")}
+      {this.getNumberField("price", "Price")}
 
-      {props.productType === "Book" && (
-        <>
-          <label htmlFor="weightField">Weight (KG)</label>
-          <div className="formInput">
-            <input
-              id="weight"
-              name="weightField"
-              type="number"
-              min={0}
-              step={0.01}
-              required
-            />
-            {props.formErrors.weight && (
-              <div className="formError">{props.formErrors.weight}</div>
-            )}
-          </div>
-        </>
-      )}
+      {this.getCategoryOptions()}
+
+      {this.categoryFields[this.state.category]()}
     </form>
   );
+
+  categoryFields: CategoryFields = {
+    DVD: () =>
+      this.getNumberField("size", "Size (MB)", {
+        title: "Please, provide size",
+      }),
+
+    Furniture: () => (
+      <>
+        {this.getNumberField("width", "Width (CM)", {
+          title: "Please, provide width",
+        })}
+        {this.getNumberField("height", "Height (CM)", {
+          title: "Please, provide height",
+        })}
+        {this.getNumberField("length", "Length (CM)", {
+          title: "Please, provide length",
+        })}
+      </>
+    ),
+
+    Book: () =>
+      this.getNumberField("weight", "Weight (KG)", {
+        title: "Please, provide weight",
+      }),
+  };
+
+  renderHeader = () => (
+    <header>
+      <h1 className="heading">Product Add</h1>
+
+      <div className="buttons">
+        <button className="btn" onClick={this.handleSubmit}>
+          Save
+        </button>
+
+        <Link to="/" className="btn">
+          Cancel
+        </Link>
+      </div>
+    </header>
+  );
+
+  renderMain = () => (
+    <main>
+      {this.renderForm()}
+
+      {this.state.error && <h3>{this.state.error}</h3>}
+    </main>
+  );
+
+  render(): React.ReactNode {
+    return (
+      <>
+        {this.renderHeader()}
+        {this.renderMain()}
+      </>
+    );
+  }
 }
