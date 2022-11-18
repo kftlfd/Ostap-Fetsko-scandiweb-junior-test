@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 
-import type { ProductInfo } from "./api";
+import type { ProductInfo, ProductCategory } from "./api";
 import { getProductsList, deleteProducts } from "./api";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -9,29 +9,48 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
 });
 
-export default function List() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<null | string>(null);
-  const [data, setData] = useState<ProductInfo[]>([]);
+type ListProps = {};
 
-  useEffect(() => {
-    document.title = "Product List";
-    fetchProducts();
-  }, []);
+type ListState = {
+  error: null | string;
+  loading: boolean;
+  data: ProductInfo[];
+};
 
-  function fetchProducts() {
-    getProductsList()
-      .then((res) => {
-        setData(res.sort((a, b) => b.id - a.id));
-        setLoading(false);
-      })
-      .catch((err: Error) => {
-        setError("Failed to load");
-        console.error(err);
-      });
+type ProductDescriptions = {
+  [K in ProductCategory]: (p: ProductInfo) => React.ReactNode;
+};
+
+export default class List extends React.Component<ListProps, ListState> {
+  constructor(props: ListProps) {
+    super(props);
+    this.state = {
+      error: null,
+      loading: true,
+      data: [],
+    };
   }
 
-  function handleDelete() {
+  componentDidMount(): void {
+    document.title = "Products List";
+    this.fetchProducts();
+  }
+
+  fetchProducts = () => {
+    getProductsList()
+      .then((res) => {
+        this.setState({
+          loading: false,
+          data: res.sort((a, b) => b.id - a.id),
+        });
+      })
+      .catch((err: Error) => {
+        this.setState({ error: "Failed to load" });
+        console.error(err);
+      });
+  };
+
+  handleDelete = () => {
     let deleteIds: number[] = [];
 
     document.querySelectorAll(".delete-checkbox").forEach((el: Element) => {
@@ -44,62 +63,80 @@ export default function List() {
 
     deleteProducts(deleteIds)
       .then(() =>
-        setData((prev) => prev.filter((p) => !deleteIds.includes(p.id)))
+        this.setState((prev) => ({
+          data: prev.data.filter((p) => !deleteIds.includes(p.id)),
+        }))
       )
       .catch((err) => console.error(err));
-  }
+  };
 
-  function refresh() {
-    setLoading(true);
-    fetchProducts();
-  }
+  handleRefresh = () => {
+    this.setState({ loading: true });
+    this.fetchProducts();
+  };
 
-  return (
-    <>
-      <header>
-        <h1 className="heading">Product List</h1>
-        <div className="middle">
-          <button className="refresh-btn" onClick={refresh} />
-        </div>
-        <div className="buttons">
-          <Link to="/add-product" className="btn">
-            ADD
-          </Link>
-          <button className="btn" onClick={handleDelete}>
-            MASS DELETE
-          </button>
-        </div>
-      </header>
+  renderHeader = () => (
+    <header>
+      <h1 className="heading">Product List</h1>
 
-      <main>
-        {error ? (
-          <h3>{error}</h3>
-        ) : loading ? (
-          <h3>Loading...</h3>
-        ) : (
-          <div className="productGrid">
-            {data.map((p) => (
-              <div key={p.sku} className="product">
-                <input
-                  type={"checkbox"}
-                  className={"delete-checkbox"}
-                  value={p.id}
-                />
-                <div>{p.sku}</div>
-                <div>{p.name}</div>
-                <div>{currencyFormatter.format(p.price)}</div>
-                {p.type === "DVD" && <div>Size: {p.size} MB</div>}
-                {p.type === "Furniture" && (
-                  <div>
-                    Dimensions: {p.width}x{p.height}x{p.length}
-                  </div>
-                )}
-                {p.type === "Book" && <div>Weight: {p.weight}KG</div>}
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
-    </>
+      <div className="middle">
+        <button className="refresh-btn" onClick={this.handleRefresh} />
+      </div>
+
+      <div className="buttons">
+        <Link to="/add-product" className="btn">
+          ADD
+        </Link>
+
+        <button className="btn" onClick={this.handleDelete}>
+          MASS DELETE
+        </button>
+      </div>
+    </header>
   );
+
+  renderMain = () => (
+    <main>
+      {this.state.error ? (
+        <h3>{this.state.error}</h3>
+      ) : this.state.loading ? (
+        <h3>Loading...</h3>
+      ) : (
+        this.renderProductsGrid()
+      )}
+    </main>
+  );
+
+  renderProductsGrid = () => (
+    <div className="productGrid">
+      {this.state.data.map((p) => (
+        <div key={p.sku} className="product">
+          <input type={"checkbox"} className={"delete-checkbox"} value={p.id} />
+          <div>{p.sku}</div>
+          <div>{p.name}</div>
+          <div>{currencyFormatter.format(p.price)}</div>
+          {this.productDescriptions[p.type](p)}
+        </div>
+      ))}
+    </div>
+  );
+
+  productDescriptions: ProductDescriptions = {
+    DVD: (p: ProductInfo) => <div>Size: {p.size} MB</div>,
+    Furniture: (p: ProductInfo) => (
+      <div>
+        Dimensions: {p.width}x{p.height}x{p.length}
+      </div>
+    ),
+    Book: (p: ProductInfo) => <div>Weight: {p.weight}KG</div>,
+  };
+
+  render(): React.ReactNode {
+    return (
+      <>
+        {this.renderHeader()}
+        {this.renderMain()}
+      </>
+    );
+  }
 }
