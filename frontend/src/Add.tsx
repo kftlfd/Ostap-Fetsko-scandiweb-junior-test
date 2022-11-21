@@ -19,7 +19,7 @@ type FormErrors = Override<Partial<FormData>, string>;
 
 type FormEl = HTMLFormElement & Override<FormData, { value: string }>;
 
-type CategoryFields = { [P in ProductCategory]: () => React.ReactNode };
+type CategoryFields = { [P in ProductCategory]: React.ReactNode };
 
 type AddProps = {
   navigate: NavigateFunction;
@@ -177,12 +177,12 @@ export default class Add extends React.Component<AddProps, AddState> {
 
       <this.CategorySwitch />
 
-      {this.categoryFields[this.state.category]()}
+      {this.categoryFields[this.state.category]}
     </form>
   );
 
   categoryFields: CategoryFields = {
-    DVD: () => (
+    DVD: (
       <this.InputNumberField
         field="size"
         label="Size (MB)"
@@ -190,7 +190,7 @@ export default class Add extends React.Component<AddProps, AddState> {
       />
     ),
 
-    Furniture: () => (
+    Furniture: (
       <>
         <this.InputNumberField
           field="width"
@@ -210,7 +210,7 @@ export default class Add extends React.Component<AddProps, AddState> {
       </>
     ),
 
-    Book: () => (
+    Book: (
       <this.InputNumberField
         field="weight"
         label="Weight (KG)"
