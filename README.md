@@ -25,7 +25,11 @@ $ ./yarn.sh add [...]
 Start Docker containers:
 
 ```
-$ docker compose -f docker-compose.yml -f docker-compose.react.yml -f docker-compose.adminer.yml up -d --build
+$ docker compose \
+    -f docker-compose.yml \
+    -f docker-compose.react.yml \
+    -f docker-compose.adminer.yml \
+    up --build
 ```
 
 - MySQL dev-database
@@ -42,7 +46,7 @@ $ docker compose up -d
 ### Frontend only
 
 ```
-$ docker compose -f docker-compose.react.yml up -d
+$ docker compose -f docker-compose.react.yml up
 
 # or
 $ ./yarn.sh dev --host
@@ -69,3 +73,9 @@ $ docker compose -f docker-compose.build.yml up -d --build
 # delete with
 $ sudo rm -r dist
 ```
+
+## Notes
+
+- Configure database credentials in `backend/config/db.env`
+
+- Backend is tailored to schema of `backend/config/schema.sql`
