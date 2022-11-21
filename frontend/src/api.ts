@@ -42,19 +42,33 @@ export async function deleteProducts(ids: number[]) {
     if (err instanceof AxiosError) {
       throw new Error(err.response?.data);
     } else {
-      throw new Error("Unknown error: " + err);
+      console.error(err);
+      throw new Error("API Error");
     }
   }
 }
 
 export async function addProduct(body: any) {
   try {
-    await axios.post(apiUrl, body);
+    const res = await axios.post(apiUrl, body);
+    return res.data;
   } catch (err) {
-    if (err instanceof AxiosError) {
-      return err.response?.data;
+    if (err instanceof AxiosError && err.response?.status === 400) {
+      throw new InvalidFormError(err.response?.data);
     } else {
-      throw new Error("Unknown error");
+      console.error(err);
+      throw new Error("API error");
     }
+  }
+}
+
+export class InvalidFormError extends Error {
+  errors: {};
+  constructor(errors: {}) {
+    super("Form Errors");
+    this.errors = errors;
+  }
+  getErrors() {
+    return this.errors;
   }
 }

@@ -3,7 +3,7 @@ import type { NavigateFunction } from "react-router-dom";
 import { Link } from "react-router-dom";
 
 import type { ProductInfo, ProductCategory } from "./api";
-import { productCategories, addProduct } from "./api";
+import { productCategories, addProduct, InvalidFormError } from "./api";
 import { Header, Main } from "./App";
 
 type Choose<T, O> = { [P in keyof O]: O[P] extends T ? P : never }[keyof O];
@@ -64,13 +64,14 @@ export default class Add extends React.Component<AddProps, AddState> {
     const data = Object.fromEntries(fd);
 
     addProduct(data)
-      .then((res) => {
-        if (!res) this.props.navigate("/");
-        else this.setState({ formErrors: res });
-      })
+      .then(() => this.props.navigate("/"))
       .catch((err: Error) => {
-        this.setState({ error: "Error: " + err.message });
-        console.error(err);
+        if (err instanceof InvalidFormError) {
+          this.setState({ formErrors: err.getErrors() });
+        } else {
+          this.setState({ error: "Error: " + err.message });
+          console.error(err);
+        }
       });
   };
 
@@ -193,17 +194,17 @@ export default class Add extends React.Component<AddProps, AddState> {
       <>
         <this.InputNumberField
           field="width"
-          label="Width (MB)"
+          label="Width (CM)"
           options={{ title: "Please, provide width" }}
         />
         <this.InputNumberField
           field="height"
-          label="Height (MB)"
+          label="Height (CM)"
           options={{ title: "Please, provide height" }}
         />
         <this.InputNumberField
           field="length"
-          label="Length (MB)"
+          label="Length (CM)"
           options={{ title: "Please, provide length" }}
         />
       </>
@@ -212,7 +213,7 @@ export default class Add extends React.Component<AddProps, AddState> {
     Book: () => (
       <this.InputNumberField
         field="weight"
-        label="Weight (MB)"
+        label="Weight (KG)"
         options={{ title: "Please, provide weight" }}
       />
     ),
