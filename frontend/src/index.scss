@@ -169,6 +169,15 @@ footer {
   .formError {
     color: red;
   }
+
+  @media screen and (max-width: 500px) {
+    grid-template-columns: auto;
+    row-gap: 0.5rem;
+
+    & :nth-child(2n + 3) {
+      margin-top: 1rem;
+    }
+  }
 }
 
 .productGrid {
