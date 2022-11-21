@@ -1,3 +1,4 @@
+import React from "react";
 import {
   BrowserRouter,
   Routes,
@@ -12,13 +13,13 @@ import Add from "./Add";
 export default function App() {
   return (
     <BrowserRouter>
-      <Router />
-      <footer>Scandiweb Test Assignment</footer>
+      <AppRouter />
+      <Footer />
     </BrowserRouter>
   );
 }
 
-function Router() {
+function AppRouter() {
   const navigate = useNavigate();
 
   return (
@@ -31,18 +32,40 @@ function Router() {
   );
 }
 
+export function Header(props: {
+  heading: string;
+  middle?: React.ReactNode;
+  buttons?: React.ReactNode;
+}) {
+  return (
+    <header>
+      <h1 className="heading">{props.heading}</h1>
+
+      {props.middle && <div className="middle">{props.middle}</div>}
+
+      {props.buttons && <div className="buttons">{props.buttons}</div>}
+    </header>
+  );
+}
+
+export function Main(props: { children: React.ReactNode }) {
+  return <main>{props.children}</main>;
+}
+
+function Footer(props: {}) {
+  return <footer>Scandiweb Test Assignment</footer>;
+}
+
 function Error() {
   return (
     <>
-      <header>
-        <h1 className="heading">Not found</h1>
-      </header>
+      <Header heading="Not found" />
 
-      <main>
+      <Main>
         <h3>
           <Link to="/">To Homepage</Link>
         </h3>
-      </main>
+      </Main>
     </>
   );
 }
