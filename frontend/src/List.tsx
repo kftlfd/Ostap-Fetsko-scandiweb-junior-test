@@ -3,24 +3,23 @@ import { Link } from "react-router-dom";
 
 import type { ProductInfo, ProductCategory } from "./api";
 import { getProductsList, deleteProducts } from "./api";
+import { Header, Main } from "./App";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "USD",
   style: "currency",
 });
 
-type ListProps = {};
+type ProductDescriptions = {
+  [K in ProductCategory]: (p: ProductInfo) => React.ReactNode;
+};
 
+type ListProps = {};
 type ListState = {
   error: null | string;
   loading: boolean;
   data: ProductInfo[];
 };
-
-type ProductDescriptions = {
-  [K in ProductCategory]: (p: ProductInfo) => React.ReactNode;
-};
-
 export default class List extends React.Component<ListProps, ListState> {
   constructor(props: ListProps) {
     super(props);
@@ -75,61 +74,73 @@ export default class List extends React.Component<ListProps, ListState> {
     this.fetchProducts();
   };
 
-  renderHeader = () => (
-    <header>
-      <h1 className="heading">Product List</h1>
-
-      <div className="middle">
-        <button className="refresh-btn" onClick={this.handleRefresh} />
-      </div>
-
-      <div className="buttons">
-        <Link to="/add-product" className="btn">
-          ADD
-        </Link>
-
-        <button className="btn" onClick={this.handleDelete}>
-          MASS DELETE
-        </button>
-      </div>
-    </header>
-  );
-
-  renderMain = () => (
-    <main>
-      {this.state.error ? (
-        <h3>{this.state.error}</h3>
-      ) : this.state.loading ? (
-        <h3>Loading...</h3>
-      ) : (
-        this.renderProductsGrid()
-      )}
-    </main>
-  );
-
-  renderProductsGrid = () => (
+  ProductsGrid = () => (
     <div className="productGrid">
       {this.state.data.map((p) => (
-        <div key={p.sku} className="product">
-          <input type={"checkbox"} className={"delete-checkbox"} value={p.id} />
-          <div>{p.sku}</div>
-          <div>{p.name}</div>
-          <div>{currencyFormatter.format(p.price)}</div>
-          {this.productDescriptions[p.type](p)}
-        </div>
+        <this.ProductCard key={p.id} p={p} />
       ))}
+    </div>
+  );
+
+  ProductCard = (props: { p: ProductInfo }) => (
+    <div className="product">
+      <input
+        type={"checkbox"}
+        className={"delete-checkbox"}
+        value={props.p.id}
+      />
+      <div>{props.p.sku}</div>
+      <div>{props.p.name}</div>
+      <div>{currencyFormatter.format(props.p.price)}</div>
+      {this.productDescriptions[props.p.type](props.p)}
     </div>
   );
 
   productDescriptions: ProductDescriptions = {
     DVD: (p: ProductInfo) => <div>Size: {p.size} MB</div>,
+
     Furniture: (p: ProductInfo) => (
       <div>
         Dimensions: {p.width}x{p.height}x{p.length}
       </div>
     ),
+
     Book: (p: ProductInfo) => <div>Weight: {p.weight}KG</div>,
   };
+
+  Loading = () => <h3>Loading...</h3>;
+
+  Error = () => <h3>{this.state.error}</h3>;
+
+  renderHeader = () => (
+    <Header
+      heading="ProductList"
+      middle={<button className="refresh-btn" onClick={this.handleRefresh} />}
+      buttons={
+        <>
+          <Link to="/add-product" className="btn">
+            ADD
+          </Link>
+          <button className="btn" onClick={this.handleDelete}>
+            MASS DELETE
+          </button>
+        </>
+      }
+    />
+  );
+
+  renderMain = () => (
+    <Main>
+      {this.state.loading ? (
+        <this.Loading />
+      ) : (
+        <>
+          {this.state.error && <this.Error />}
+          <this.ProductsGrid />
+        </>
+      )}
+    </Main>
+  );
 
   render(): React.ReactNode {
     return (
