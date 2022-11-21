@@ -62,7 +62,7 @@ frontend$ yarn dev
 Run a production build on http://localhost:
 
 ```
-$ docker compose -f docker-compose.prod.yml up -d -- build
+$ docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 Create a distributable build of an app (backend + frontend) at `dist/`:
