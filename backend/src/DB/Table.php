@@ -2,7 +2,6 @@
 
 namespace src\DB;
 
-use PDO;
 use src\Utilities;
 
 abstract class Table
@@ -31,22 +30,9 @@ abstract class Table
 
     protected $validationErrors = [];
 
-    public function __construct()
+    public function __construct(\PDO $conn)
     {
-        $dbHost = $_ENV["MYSQL_HOST"];
-        $dbName = $_ENV["MYSQL_DATABASE"];
-        $dbUser = $_ENV["MYSQL_USER"];
-        $dbPass = $_ENV["MYSQL_PASSWORD"];
-
-        $this->conn = new PDO(
-            "mysql:host=$dbHost;dbname=$dbName",
-            $dbUser,
-            $dbPass,
-            [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-            ]
-        );
+        $this->conn = $conn;
     }
 
     //

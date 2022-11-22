@@ -2,6 +2,7 @@
 
 namespace src\API;
 
+use src\DB\DBConfig;
 use src\DB\Products;
 use src\DB\ValidationError;
 
@@ -11,7 +12,8 @@ class API extends Base
 
     protected function setup()
     {
-        $this->db = new Products();
+        $conn = DBConfig::getConn();
+        $this->db = new Products($conn);
     }
 
     protected function handleOPTIONS()
