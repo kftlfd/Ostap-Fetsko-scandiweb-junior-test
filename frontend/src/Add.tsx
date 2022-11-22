@@ -126,9 +126,9 @@ export default class Add extends React.Component<AddProps, AddState> {
           id={props.field}
           name={props.field}
           type="number"
-          min={props.options?.min}
+          min={props.options?.min ?? 0}
           max={props.options?.max}
-          step={props.options?.step}
+          step={props.options?.step ?? 0.01}
           defaultValue={props.options?.defVal}
           title={props.options?.title}
           required={props.options?.required ?? true}
@@ -171,8 +171,24 @@ export default class Add extends React.Component<AddProps, AddState> {
 
   AddForm = () => (
     <form id="product_form" className="addForm" ref={this.formRef}>
-      <this.InputTextField field="sku" label="SKU" />
-      <this.InputTextField field="name" label="Name" />
+      <this.InputTextField
+        field="sku"
+        label="SKU"
+        options={{
+          pattern: "[\\w]{1,100}",
+          title:
+            "Please use only a-zA-Z0-9_ without spaces (up to 100 characters)",
+        }}
+      />
+      <this.InputTextField
+        field="name"
+        label="Name"
+        options={{
+          pattern: "[a-zA-Z0-9!@#$%&*()-_,.:; ]{1,250}",
+          title:
+            "Allowed characters: a-zA-Z0-9!@#$%&*()-_,.:; and spaces (up to 250 characters)",
+        }}
+      />
       <this.InputNumberField field="price" label="Price" />
 
       <this.CategorySwitch />
@@ -193,14 +209,14 @@ export default class Add extends React.Component<AddProps, AddState> {
     Furniture: (
       <>
         <this.InputNumberField
-          field="width"
-          label="Width (CM)"
-          options={{ title: "Please, provide width" }}
-        />
-        <this.InputNumberField
           field="height"
           label="Height (CM)"
           options={{ title: "Please, provide height" }}
+        />
+        <this.InputNumberField
+          field="width"
+          label="Width (CM)"
+          options={{ title: "Please, provide width" }}
         />
         <this.InputNumberField
           field="length"

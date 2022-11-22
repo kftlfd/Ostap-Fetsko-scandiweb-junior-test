@@ -44,7 +44,10 @@ export default class List extends React.Component<ListProps, ListState> {
         });
       })
       .catch((err: Error) => {
-        this.setState({ error: "Failed to load" });
+        this.setState({
+          loading: false,
+          error: "Failed to load",
+        });
         console.error(err);
       });
   };
@@ -101,7 +104,7 @@ export default class List extends React.Component<ListProps, ListState> {
 
     Furniture: (p: ProductInfo) => (
       <div>
-        Dimensions: {p.width}x{p.height}x{p.length}
+        Dimensions: {p.height}x{p.width}x{p.length}
       </div>
     ),
 
