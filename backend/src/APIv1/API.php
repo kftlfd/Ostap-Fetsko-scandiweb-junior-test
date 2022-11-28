@@ -1,10 +1,6 @@
 <?php
 
-namespace src\API;
-
-use src\DB\DBConfig;
-use src\DB\Products;
-use src\DB\ValidationError;
+namespace src\APIv1;
 
 class API extends Base
 {

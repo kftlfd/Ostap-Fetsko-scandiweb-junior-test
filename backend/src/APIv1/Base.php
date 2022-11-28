@@ -1,6 +1,6 @@
 <?php
 
-namespace src\API;
+namespace src\APIv1;
 
 abstract class Base
 {

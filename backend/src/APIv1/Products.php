@@ -1,8 +1,6 @@
 <?php
 
-namespace src\DB;
-
-use src\DB\ValidationError;
+namespace src\APIv1;
 
 class Products extends Table
 {

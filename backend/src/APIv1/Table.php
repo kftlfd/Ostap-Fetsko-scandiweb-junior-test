@@ -1,6 +1,6 @@
 <?php
 
-namespace src\DB;
+namespace src\APIv1;
 
 abstract class Table
 {
