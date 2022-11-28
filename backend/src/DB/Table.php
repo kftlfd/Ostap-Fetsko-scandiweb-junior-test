@@ -2,8 +2,6 @@
 
 namespace src\DB;
 
-use src\Utilities;
-
 abstract class Table
 {
     protected const SCHEMA_TYPE = "type";
@@ -70,10 +68,18 @@ abstract class Table
 
     public function deleteIds($ids)
     {
+        function array_every($array, $cb)
+        {
+            foreach ($array as $val) {
+                if (!$cb($val)) return false;
+            }
+            return true;
+        }
+
         if (
             !is_array($ids) ||
             empty($ids) ||
-            !Utilities::isIntegerArray($ids)
+            !array_every($ids, "is_int")
         ) {
             throw new ValidationError(["error" => "Request body must be a valid JSON array of integers"]);
         }
@@ -149,13 +155,20 @@ abstract class Table
         return $entryMap;
     }
 
-    protected function buildInsertQuery($fields)
+    protected function buildInsertQuery(array $fields)
     {
-        $q1 = ["INSERT INTO $this->table ("];
-        $qFields = Utilities::insert_commas($fields);
-        $q2 = [") VALUES ("];
-        $qValues = array_map("src\Utilities::prepend_colon", $qFields);
-        $q3 = [")"];
-        return implode(array_merge($q1, $qFields, $q2, $qValues, $q3));
+        $q1 = "INSERT INTO $this->table (";
+
+        $qFields = join(", ", $fields);
+
+        $q2 = ") VALUES (";
+
+        $qValues = join(",", array_map(function ($str) {
+            return ":$str";
+        }, $fields));
+
+        $q3 = ")";
+
+        return $q1 . $qFields . $q2 . $qValues . $q3;
     }
 }
