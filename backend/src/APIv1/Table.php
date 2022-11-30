@@ -47,7 +47,7 @@ abstract class Table
     public function selectWhere($field, $value)
     {
         if (is_string($value)) $value = "'$value'";
-        $query = "SELECT * FROM $this->table WHERE $field = $value";
+        $query = "SELECT * FROM $this->table WHERE `$field`=$value";
         $data = $this->conn->query($query)->fetchAll();
         return $data;
     }
@@ -157,18 +157,12 @@ abstract class Table
 
     protected function buildInsertQuery(array $fields)
     {
-        $q1 = "INSERT INTO $this->table (";
-
         $qFields = join(", ", $fields);
-
-        $q2 = ") VALUES (";
 
         $qValues = join(",", array_map(function ($str) {
             return ":$str";
         }, $fields));
 
-        $q3 = ")";
-
-        return $q1 . $qFields . $q2 . $qValues . $q3;
+        return "INSERT INTO $this->table ($qFields) VALUES ($qValues)";
     }
 }
