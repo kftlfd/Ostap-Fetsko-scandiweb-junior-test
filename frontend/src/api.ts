@@ -36,7 +36,9 @@ export async function getProductsList() {
 
 export async function deleteProducts(ids: number[]) {
   try {
-    const res = await axios.delete(apiUrl, { data: ids });
+    // const res = await axios.delete(apiUrl, { data: ids });
+    // Hosting provider blocks DELETE request method, so redirecting them through POST
+    const res = await axios.post(apiUrl + "delete/", ids);
     return res.data;
   } catch (err) {
     if (err instanceof AxiosError) {

@@ -35,6 +35,12 @@ class API extends APIBase
     /** Handler for requests with POST method */
     protected function handlePOST()
     {
+        // Hosting provider blocks DELETE request method, so redirecting them through POST
+        if ($_SERVER["REQUEST_URI"] === "/api/delete/") {
+            $this->handleDELETE();
+            exit;
+        }
+
         $input = $this->getInputObj();
 
         try {
