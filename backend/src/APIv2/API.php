@@ -7,7 +7,7 @@ namespace src\APIv2;
  */
 class API extends APIBase
 {
-    protected $methods = ["OPTIONS", "GET", "POST", "PUT", "DELETE"];
+    protected $methods = ["OPTIONS", "GET", "POST", "PATCH", "DELETE"];
 
     /** Handler for requests with OPTIONS method */
     protected function handleOPTIONS()
@@ -15,7 +15,7 @@ class API extends APIBase
         $this->respond([
             "GET" => "Get list of all products",
             "POST" => "Create new product",
-            "PUT" => "Update product",
+            "PATCH" => "Update product",
             "DELETE" => "Delete products"
         ], null, true);
     }
@@ -47,7 +47,7 @@ class API extends APIBase
     }
 
     /** Handler for requests with PUT method */
-    protected function handlePUT()
+    protected function handlePATCH()
     {
         $input = $this->getInputObj();
 
