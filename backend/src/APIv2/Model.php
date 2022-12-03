@@ -4,6 +4,7 @@ namespace src\APIv2;
 
 /**
  * Model class for mapping a database row to an object
+ * (ActiveRecord-like)
  */
 abstract class Model
 {
@@ -12,7 +13,85 @@ abstract class Model
     protected const TYPE_TEXT = "text";
     protected const TYPE_NUMBER = "number";
 
+    protected const TABLE = "";
     protected $data;
+
+    /**
+     * Get database adapter
+     */
+    protected static function getAdapter()
+    {
+        return new DBAdapter(static::TABLE);
+    }
+
+    /**
+     * Declare model schema via setField(...) statements \
+     * Note: don't set instance's id from `$attributes` param, 
+     * specify only `$this->setId();` instead. \
+     * Setting id is done internally in `save()` and `static::load()` methods
+     * @param array $attributes Array of $key=>$value pairs
+     */
+    public function __construct(array $attributes)
+    {
+    }
+
+    /**
+     * For loading objects from table rows
+     * @param array $row
+     * @return static
+     */
+    protected static function load(array $row)
+    {
+        $obj = new static($row);
+        $obj->setId($row["id"]);
+        return $obj;
+    }
+
+    /**
+     * Search model's table
+     * @param array $clause Array of [$field => $value, ...] pairs
+     * @param int $limit Limit search results. No limit by default
+     * @param bool $desc List rows in reverse order
+     * @return static[]
+     */
+    public static function find(array $clause, int $limit = null, $desc = false)
+    {
+        $adapter = static::getAdapter();
+        $result = $adapter->select($clause, $limit, $desc);
+        if (!$result) return [];
+        return array_map(function ($row) {
+            return static::load($row);
+        }, $result);
+    }
+
+    /**
+     * @param int $id
+     * @return static|null
+     */
+    public static function getById(int $id)
+    {
+        $result = static::find(["id" => $id]);
+        if (!$result) return null;
+        return $result[0];
+    }
+
+    /**
+     * @return static[]
+     */
+    public static function getAll()
+    {
+        return static::find([]);
+    }
+
+    /** 
+     * Overload getters to fetch properties from data array 
+     * @return string|int|float|null
+     */
+    public function __get(string $name)
+    {
+        if (!$this->data[$name]) return null;
+        return $this->data[$name][self::FIELD_VALUE];
+    }
 
     /** 
      * Save value and type for a field in data array
@@ -44,33 +123,13 @@ abstract class Model
         return True;
     }
 
-    /** 
-     * Overload getters to fetch properties from data array 
-     * @return string|int|float|null
+    /**
+     * @param int|null $id
      */
-    public function __get(string $name)
+    protected function setId($id = null)
     {
-        if (!$this->data[$name]) return null;
-        return $this->data[$name][self::FIELD_VALUE];
+        $this->setField("id", $id, true);
     }
-
-    /**
-     * Validate data before saving to database, return array of errors if any
-     * @return array|null
-     */
-    abstract public function validate();
-
-    /**
-     * Save (insert/update) object to database
-     * @return void
-     */
-    abstract public function save();
-
-    /**
-     * Delete object from database
-     * @return void
-     */
-    abstract public function delete();
 
     /**
      * Get sanitized non-empty string or null
@@ -100,7 +159,63 @@ abstract class Model
     }
 
     /**
-     * Get assoc array of product's attributes, excluding id
+     * Validate data before saving to database, return array of errors if any
+     * @return array|null
+     */
+    public function validate()
+    {
+        $errors = [];
+
+        // Check if all fields are present
+        // Fields should be already sanitized through setters
+        $data = $this->toDataArray();
+        foreach ($data as $key => $val) {
+            if (isset($val)) continue;
+            $errors[$key] = "Field '$key' of type '{$this->data[$key][self::FIELD_TYPE]}' is required.";
+        }
+
+        return !empty($errors) ? $errors : null;
+    }
+
+    /**
+     * Save (insert/update) object to database
+     * @throws ValidationError
+     * @return void
+     */
+    public function save()
+    {
+        $errors = $this->validate();
+        if (!empty($errors)) throw new ValidationError($errors);
+
+        $adapter = static::getAdapter();
+        $data = $this->toDataArray();
+        $id = $this->id;
+
+        if (isset($id)) {
+            $adapter->update($id, $data);
+        } else {
+            $id = $adapter->insert($data);
+            $this->setId($id);
+        }
+    }
+
+    /**
+     * Delete object from database
+     * @return void
+     */
+    public function delete()
+    {
+        $id = $this->id;
+        if (!isset($id)) {
+            echo "not saved";
+            return;
+        }
+        $adapter = static::getAdapter();
+        $adapter->delete($id);
+    }
+
+    /**
+     * Get assoc array of object's data, excluding id
      */
     public function toDataArray()
     {
@@ -113,8 +228,8 @@ abstract class Model
     }
 
     /**
-     * Convert object to JSON string, preserving numericAttributes as numbers. \
-     * Validate that all fields are set (e.g. $this->validate()) in advance.
+     * Convert object's data to JSON string. \
+     * Note: if value for field is not set (is null), it will be converted as empty string or zero.
      */
     public function toJSON()
     {

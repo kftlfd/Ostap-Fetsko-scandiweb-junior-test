@@ -12,28 +12,35 @@ namespace src\APIv2;
  */
 class Product extends Model
 {
-    //
-    // Constructors
-    //
+    protected const TABLE = "products";
 
-    /**
-     * Configure database adapter
-     */
-    protected static function getDBAdapter()
+    protected function __construct(array $attributes)
     {
-        return new DBAdapter("products");
-    }
-
-    /**
-     * Internal constructor
-     */
-    public function __construct(array $attributes)
-    {
-        $this->setId(null);
+        $this->setId();
         $this->setSKU($attributes["sku"]);
         $this->setName($attributes["name"]);
         $this->setPrice($attributes["price"]);
         $this->setType($attributes["type"]);
+    }
+
+    protected function setSKU($sku)
+    {
+        $this->setField("sku", $sku);
+    }
+
+    public function setName($name)
+    {
+        $this->setField("name", $name);
+    }
+
+    public function setPrice($price)
+    {
+        $this->setField("price", $price, true);
+    }
+
+    protected function setType($type)
+    {
+        $this->setField("type", $type);
     }
 
     /**
@@ -58,100 +65,20 @@ class Product extends Model
     }
 
     /**
-     * For loading Product(s) from database
+     * Overload load() method to use `static::create()` constructor
      * @param array $state Array of [$field => $value, ...] pairs
      * @return Product
      */
     protected static function load(array $state)
     {
         $product = static::create($state);
-        $product->setField("id", $state["id"], true);
+        $product->setId($state["id"]);
         return $product;
     }
 
-    /**
-     * Search Products table
-     * @param array $clause Array of [$field => $value, ...] pairs
-     * @param int $limit Limit search results. No limit by default
-     * @param bool $desc List rows in reverse order
-     * @return Product[]|false
-     */
-    public static function find(array $clause, int $limit = null, $desc = false)
-    {
-        $adapter = static::getDBAdapter();
-        $result = $adapter->select($clause, $limit, $desc);
-        if (!$result) return $result;
-        $data = array_map(function ($p) {
-            return static::load($p);
-        }, $result);
-        return $data;
-    }
-
-    /**
-     * List all Products
-     * @return Product[]|false
-     */
-    public static function getAll()
-    {
-        return static::find([]);
-    }
-
-    /**
-     * Get Product by id
-     * @param int $id
-     * @return Product|false
-     */
-    public static function getById(int $id)
-    {
-        $result = static::find(["id" => $id]);
-        if (!$result) return $result;
-        return $result[0];
-    }
-
-    //
-    // Setters
-    //
-
-    protected function setId($id)
-    {
-        $this->setField("id", $id, true);
-    }
-
-    protected function setSKU($sku)
-    {
-        $this->setField("sku", $sku);
-    }
-
-    public function setName($name)
-    {
-        $this->setField("name", $name);
-    }
-
-    public function setPrice($price)
-    {
-        $this->setField("price", $price, true);
-    }
-
-    protected function setType($type)
-    {
-        $this->setField("type", $type);
-    }
-
-    //
-    // Data operations
-    //
-
     public function validate()
     {
-        $errors = [];
-
-        // Check if all fields are present
-        // Fields should be already sanitized through setters
-        $data = $this->toDataArray();
-        foreach ($data as $key => $val) {
-            if (isset($val)) continue;
-            $errors[$key] = "Field '$key' of type '{$this->data[$key][self::FIELD_TYPE]}' is required.";
-        }
+        $errors = parent::validate();
 
         // Check if product's SKU is unique on creation
         if (!isset($this->id)) {
@@ -161,29 +88,5 @@ class Product extends Model
         }
 
         return !empty($errors) ? $errors : null;
-    }
-
-    /**
-     * @throws ValidationError
-     */
-    public function save()
-    {
-        $errors = $this->validate();
-        if (!empty($errors)) throw new ValidationError($errors);
-
-        $adapter = static::getDBAdapter();
-        $data = $this->toDataArray();
-        if (isset($this->id)) {
-            $adapter->update($this->id, $data);
-        } else {
-            $id = $adapter->insert($data);
-            $this->setId($id);
-        }
-    }
-
-    public function delete()
-    {
-        $adapter = static::getDBAdapter();
-        $adapter->delete($this->id);
     }
 }
