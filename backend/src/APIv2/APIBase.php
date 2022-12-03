@@ -14,6 +14,7 @@ abstract class APIBase
     public const HTTP_404_NOT_FOUND = 404;
     public const HTTP_405_METHOD_NOT_ALLOWED = 405;
     public const HTTP_500_INTERNAL_SERVER_ERROR = 500;
+    public const HTTP_501_NOT_IMPLEMENTED = 501;
 
     /** Supported request methods */
     protected $methods = [];
@@ -24,6 +25,9 @@ abstract class APIBase
         $this->setHeaders();
         $method = $this->getRequestMethod();
         $handler = "handle" . $method;
+        if (!method_exists($this, $handler)) {
+            $this->respond(null, self::HTTP_501_NOT_IMPLEMENTED);
+        }
         try {
             $this->setup();
             $this->$handler();
