@@ -1,6 +1,6 @@
 <?php
 
-namespace src\APIv2;
+namespace App;
 
 /**
  * Handler for API requests

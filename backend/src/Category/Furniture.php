@@ -1,8 +1,8 @@
 <?php
 
-namespace src\APIv2\Category;
+namespace App\Category;
 
-use src\APIv2\Product;
+use App\Product;
 
 /**
  * Furniture category class

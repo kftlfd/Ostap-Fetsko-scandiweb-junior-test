@@ -1,6 +1,6 @@
 <?php
 
-namespace src\APIv2;
+namespace App;
 
 /**
  * Translation layer for CRUD operations on database

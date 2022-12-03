@@ -1,6 +1,6 @@
 <?php
 
-namespace src\APIv2;
+namespace App;
 
 /**
  * Model class for mapping a database row to an object
