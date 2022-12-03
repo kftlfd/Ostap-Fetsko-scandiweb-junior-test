@@ -4,34 +4,14 @@ namespace src\APIv2;
 
 /**
  * Base class for Products
+ * @property int $id
+ * @property string $sku
+ * @property string $name
+ * @property int|float $price
+ * @property string $type
  */
 class Product extends Model
 {
-    //
-    // Schema
-    //
-
-    protected $sku;
-    protected $name;
-    protected $price;
-    protected $type;
-
-    protected function numericAttributes()
-    {
-        return array_merge(
-            parent::numericAttributes(),
-            ["price"]
-        );
-    }
-
-    protected function attributeOrder()
-    {
-        return array_merge(
-            parent::attributeOrder(),
-            ["sku", "name", "price", "type"]
-        );
-    }
-
     //
     // Constructors
     //
@@ -49,6 +29,7 @@ class Product extends Model
      */
     public function __construct(array $attributes)
     {
+        $this->setId(null);
         $this->setSKU($attributes["sku"]);
         $this->setName($attributes["name"]);
         $this->setPrice($attributes["price"]);
@@ -84,7 +65,7 @@ class Product extends Model
     protected static function load(array $state)
     {
         $product = static::create($state);
-        $product->id = $state["id"];
+        $product->setField("id", $state["id"], true);
         return $product;
     }
 
@@ -128,32 +109,32 @@ class Product extends Model
     }
 
     //
-    // Getters and setters
+    // Setters
     //
 
-    public function __get($name)
+    protected function setId($id)
     {
-        return $this->$name;
+        $this->setField("id", $id, true);
     }
 
     protected function setSKU($sku)
     {
-        $this->sku = static::getSanitizedString($sku);
+        $this->setField("sku", $sku);
     }
 
     public function setName($name)
     {
-        $this->name = static::getSanitizedString($name);
+        $this->setField("name", $name);
     }
 
     public function setPrice($price)
     {
-        $this->price = static::getSanitizedNumber($price);
+        $this->setField("price", $price, true);
     }
 
     protected function setType($type)
     {
-        $this->type = static::getSanitizedString($type);
+        $this->setField("type", $type);
     }
 
     //
@@ -166,16 +147,14 @@ class Product extends Model
 
         // Check if all fields are present
         // Fields should be already sanitized through setters
-        $props = $this->toDataArray();
-        $numeric = $this->numericAttributes();
-        foreach ($props as $key => $val) {
+        $data = $this->toDataArray();
+        foreach ($data as $key => $val) {
             if (isset($val)) continue;
-            $type = in_array($key, $numeric) ? "number" : "string";
-            $errors[$key] = "Field '$key' of type '$type' is required.";
+            $errors[$key] = "Field '$key' of type '{$this->data[$key][self::FIELD_TYPE]}' is required.";
         }
 
         // Check if product's SKU is unique on creation
-        if (!isset($this->id) && isset($this->sku)) {
+        if (!isset($this->id)) {
             $inDB = self::find(["sku" => $this->sku]);
             if (!empty($inDB)) $errors["sku"] = "Product's SKU must be unique: " .
                 "'$this->sku' is already in the databse";
@@ -198,7 +177,7 @@ class Product extends Model
             $adapter->update($this->id, $data);
         } else {
             $id = $adapter->insert($data);
-            $this->id = $id;
+            $this->setId($id);
         }
     }
 

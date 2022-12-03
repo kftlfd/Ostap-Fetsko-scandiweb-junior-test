@@ -6,29 +6,12 @@ use src\APIv2\Product;
 
 /**
  * Furniture category class
+ * @property int|float $height
+ * @property int|float $width
+ * @property int|float $length
  */
 class Furniture extends Product
 {
-    protected $height;
-    protected $width;
-    protected $length;
-
-    protected function numericAttributes()
-    {
-        return array_merge(
-            parent::numericAttributes(),
-            ["height", "width", "length"]
-        );
-    }
-
-    protected function attributeOrder()
-    {
-        return array_merge(
-            parent::attributeOrder(),
-            ["height", "width", "length"]
-        );
-    }
-
     public function __construct(array $attributes)
     {
         parent::__construct($attributes);
@@ -39,16 +22,16 @@ class Furniture extends Product
 
     public function setHeight($height)
     {
-        $this->height = static::getSanitizedNumber($height);
+        $this->setField("height", $height, true);
     }
 
     public function setWidth($width)
     {
-        $this->width = static::getSanitizedNumber($width);
+        $this->setField("width", $width, true);
     }
 
     public function setLength($length)
     {
-        $this->length = static::getSanitizedNumber($length);
+        $this->setField("length", $length, true);
     }
 }

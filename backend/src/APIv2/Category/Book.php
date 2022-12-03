@@ -6,27 +6,10 @@ use src\APIv2\Product;
 
 /**
  * Book category class
+ * @property int|float $weight
  */
 class Book extends Product
 {
-    protected $weight;
-
-    protected function numericAttributes()
-    {
-        return array_merge(
-            parent::numericAttributes(),
-            ["weight"]
-        );
-    }
-
-    protected function attributeOrder()
-    {
-        return array_merge(
-            parent::attributeOrder(),
-            ["weight"]
-        );
-    }
-
     public function __construct(array $attributes)
     {
         parent::__construct($attributes);
@@ -35,6 +18,6 @@ class Book extends Product
 
     public function setWeight($weight)
     {
-        $this->weight = static::getSanitizedNumber($weight);
+        $this->setField("weight", $weight, true);
     }
 }

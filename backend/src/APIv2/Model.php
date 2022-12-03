@@ -7,22 +7,51 @@ namespace src\APIv2;
  */
 abstract class Model
 {
-    protected $id;
+    protected const FIELD_VALUE = "value";
+    protected const FIELD_TYPE = "type";
+    protected const TYPE_TEXT = "text";
+    protected const TYPE_NUMBER = "number";
 
-    /**
-     * Fields that should be preserved as numeric when converting to JSON
+    protected $data;
+
+    /** 
+     * Save value and type for a field in data array
+     * @param string $field Name of the field
+     * @param string|int|float $value Value for field
+     * @param bool $numeric Specify if value is a number
+     * @param bool $negative For numeric values specify if it can be negative (by default use positive/absolute value)
      */
-    protected function numericAttributes()
+    protected function setField(string $field, $value, $numeric = false, $negative = false)
     {
-        return ["id"];
+        $type = $numeric ? self::TYPE_NUMBER : self::TYPE_TEXT;
+        $prevValue = $this->data[$field] ? $this->data[$field][self::FIELD_VALUE] : null;
+        $newValue = $numeric
+            ? static::getSanitizedNumber($value, $negative)
+            : static::getSanitizedString($value);
+
+        if (!isset($newValue)) {
+            $this->data[$field] = [
+                self::FIELD_VALUE => $prevValue,
+                self::FIELD_TYPE => $type,
+            ];
+            return False;
+        }
+
+        $this->data[$field] = [
+            self::FIELD_VALUE => $newValue,
+            self::FIELD_TYPE => $type,
+        ];
+        return True;
     }
 
-    /**
-     * Order for attributes when converting to JSON
+    /** 
+     * Overload getters to fetch properties from data array 
+     * @return string|int|float|null
      */
-    protected function attributeOrder()
+    public function __get(string $name)
     {
-        return ["id"];
+        if (!$this->data[$name]) return null;
+        return $this->data[$name][self::FIELD_VALUE];
     }
 
     /**
@@ -75,7 +104,10 @@ abstract class Model
      */
     public function toDataArray()
     {
-        $arr = get_object_vars($this);
+        $arr = [];
+        foreach ($this->data as $key => $info) {
+            $arr[$key] = $info[self::FIELD_VALUE];
+        }
         unset($arr["id"]);
         return $arr;
     }
@@ -86,13 +118,16 @@ abstract class Model
      */
     public function toJSON()
     {
-        $order = $this->attributeOrder();
-        $numerics = $this->numericAttributes();
-        $kvpairs = array_map(function ($key) use ($numerics) {
-            $val = $this->$key;
-            $val = in_array($key, $numerics) ? $val : "\"$val\"";
-            return "\"$key\":$val";
-        }, $order);
+        $kvpairs = [];
+        foreach ($this->data as $key => $info) {
+            $type = $info[self::FIELD_TYPE];
+            $val = $info[self::FIELD_VALUE];
+
+            $val = $type === self::TYPE_NUMBER ? $val : "\"$val\"";
+            if (!isset($val) && $type === self::TYPE_NUMBER) $val = 0;
+
+            $kvpairs[] = "\"$key\":$val";
+        }
         return "{" . join(",", $kvpairs) . "}";
     }
 }
