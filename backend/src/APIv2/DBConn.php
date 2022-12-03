@@ -9,10 +9,12 @@ use PDO;
  */
 class DBConn
 {
-    /** @var PDO */
-    public $conn;
+    private static $instance;
 
-    public function __construct()
+    /** @var PDO */
+    private $conn;
+
+    private function __construct()
     {
         $dbHost = $_ENV["MYSQL_HOST"];
         $dbName = $_ENV["MYSQL_DATABASE"];
@@ -28,5 +30,18 @@ class DBConn
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
             ]
         );
+    }
+
+    public static function getInstanse()
+    {
+        if (self::$instance == null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    public function getConnection()
+    {
+        return $this->conn;
     }
 }

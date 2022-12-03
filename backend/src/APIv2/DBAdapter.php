@@ -12,8 +12,7 @@ class DBAdapter
 
     public function __construct(string $tableName)
     {
-        $connection = new DBConn();
-        $this->db = $connection->conn;
+        $this->db = (DBConn::getInstanse())->getConnection();
         $this->table = $tableName;
     }
 
