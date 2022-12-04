@@ -10,10 +10,19 @@ abstract class Model
 {
     protected const FIELD_VALUE = "value";
     protected const FIELD_TYPE = "type";
+    protected const FIELD_REQUIRED = "required";
+    protected const FIELD_MAX_LEN = "maxlen";
+    protected const FIELD_MAX = "max";
+    protected const FIELD_MIN = "min";
+    protected const FIELD_NEGATIVE = "negative";
+    protected const FIELD_COMMENT = "comment";
+
     protected const TYPE_TEXT = "text";
     protected const TYPE_NUMBER = "number";
 
     protected const TABLE = "";
+    protected const ID_FIELD = "id";
+
     protected $data;
 
     /**
@@ -97,38 +106,53 @@ abstract class Model
      * Save value and type for a field in data array
      * @param string $field Name of the field
      * @param string|int|float $value Value for field
-     * @param bool $numeric Specify if value is a number
-     * @param bool $negative For numeric values specify if it can be negative (by default use positive/absolute value)
+     * @param array $options Field attributes
+     * @return bool `true` if `$value` has been assigned to the field
      */
-    protected function setField(string $field, $value, $numeric = false, $negative = false)
+    protected function setField(string $field, $value, array $options = [])
     {
-        $type = $numeric ? self::TYPE_NUMBER : self::TYPE_TEXT;
+        $required = $options[self::FIELD_REQUIRED];
+        if (!isset($required)) $required = true;
+
+        $fieldtype = $options[self::FIELD_TYPE];
+        if (!isset($fieldtype)) $fieldtype = self::TYPE_TEXT;
+
         $prevValue = $this->data[$field] ? $this->data[$field][self::FIELD_VALUE] : null;
-        $newValue = $numeric
-            ? static::getSanitizedNumber($value, $negative)
+        $newValue = $fieldtype === self::TYPE_NUMBER
+            ? static::getSanitizedNumber($value, $options[self::FIELD_NEGATIVE] === true)
             : static::getSanitizedString($value);
 
-        if (!isset($newValue)) {
-            $this->data[$field] = [
-                self::FIELD_VALUE => $prevValue,
-                self::FIELD_TYPE => $type,
-            ];
-            return False;
+        $this->data[$field] = [
+            self::FIELD_VALUE => isset($newValue) ? $newValue : $prevValue,
+            self::FIELD_TYPE => $fieldtype,
+            self::FIELD_REQUIRED => $required,
+            self::FIELD_COMMENT => $options[self::FIELD_COMMENT]
+        ];
+
+        if ($fieldtype === self::TYPE_TEXT) {
+            $maxlen = $options[self::FIELD_MAX_LEN];
+            if (is_int($maxlen)) $this->data[$field][self::FIELD_MAX_LEN] = $maxlen;
         }
 
-        $this->data[$field] = [
-            self::FIELD_VALUE => $newValue,
-            self::FIELD_TYPE => $type,
-        ];
-        return True;
+        if ($fieldtype === self::TYPE_NUMBER) {
+            $max = $options[self::FIELD_MAX];
+            if (is_int($max) || is_float($max)) $this->data[$field][self::FIELD_MAX] = $max;
+
+            $min = $options[self::FIELD_MIN];
+            if (is_int($min) || is_float($min)) $this->data[$field][self::FIELD_MIN] = $min;
+        }
+
+        return isset($newValue);
     }
 
     /**
      * @param int|null $id
      */
-    protected function setId($id = null)
+    final protected function setId($id = null)
     {
-        $this->setField("id", $id, true);
+        $this->setField(static::ID_FIELD, $id, [
+            self::FIELD_TYPE => self::TYPE_NUMBER
+        ]);
     }
 
     /**
@@ -166,12 +190,42 @@ abstract class Model
     {
         $errors = [];
 
-        // Check if all fields are present
-        // Fields should be already sanitized through setters
-        $data = $this->toDataArray();
-        foreach ($data as $key => $val) {
-            if (isset($val)) continue;
-            $errors[$key] = "Field '$key' of type '{$this->data[$key][self::FIELD_TYPE]}' is required.";
+        foreach ($this->data as $field => $info) {
+            if ($field === static::ID_FIELD) continue;
+
+            $fieldvalue = $info[self::FIELD_VALUE];
+            $fieldtype = $info[self::FIELD_TYPE];
+
+            if (!isset($fieldvalue)) {
+                if ($info[self::FIELD_REQUIRED] === true) {
+                    $errors[$field] = join(" ", [
+                        "Field '$field' of type '{$info[self::FIELD_TYPE]}' is required.",
+                        $info[self::FIELD_COMMENT]
+                    ]);
+                }
+                continue;
+            }
+
+            if ($fieldtype === self::TYPE_TEXT) {
+                $maxlen = $info[self::FIELD_MAX_LEN];
+                if (isset($maxlen) && strlen($fieldvalue) > $maxlen) {
+                    $errors[$field] = "Field '$field' should be less than $maxlen characters long.";
+                    continue;
+                }
+            }
+
+            if ($fieldtype === self::TYPE_NUMBER) {
+                $max = $info[self::FIELD_MAX];
+                if (isset($max) && $fieldvalue > $max) {
+                    $errors[$field] = "Field '$field' should be less than $max.";
+                    continue;
+                }
+
+                $min = $info[self::FIELD_MIN];
+                if (isset($min) && $fieldvalue < $min) {
+                    $errors[$field] = "Field '$field' should be more than $min.";
+                }
+            }
         }
 
         return !empty($errors) ? $errors : null;

@@ -18,6 +18,9 @@ class DVD extends Product
 
     public function setSize($size)
     {
-        $this->setField("size", $size, true);
+        $this->setField("size", $size, [
+            self::FIELD_TYPE => self::TYPE_NUMBER,
+            self::FIELD_MAX => 10 ** 8
+        ]);
     }
 }

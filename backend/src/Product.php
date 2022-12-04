@@ -25,22 +25,31 @@ class Product extends Model
 
     protected function setSKU($sku)
     {
-        $this->setField("sku", $sku);
+        $this->setField("sku", $sku, [
+            self::FIELD_MAX_LEN => 100
+        ]);
     }
 
     public function setName($name)
     {
-        $this->setField("name", $name);
+        $this->setField("name", $name, [
+            self::FIELD_MAX_LEN => 250
+        ]);
     }
 
     public function setPrice($price)
     {
-        $this->setField("price", $price, true);
+        $this->setField("price", $price, [
+            self::FIELD_TYPE => self::TYPE_NUMBER,
+            self::FIELD_MAX => 10 ** 8
+        ]);
     }
 
     protected function setType($type)
     {
-        $this->setField("type", $type);
+        $this->setField("type", $type, [
+            self::FIELD_MAX_LEN => 30
+        ]);
     }
 
     /**
