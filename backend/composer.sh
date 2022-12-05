@@ -1,5 +1,6 @@
 #!/bin/bash
+dir="$(dirname -- "$(readlink -f "${BASH_SOURCE}")")";
 docker run --rm -it \
-    -v "$(pwd)/backend:/app" \
+    -v "$dir:/app" \
     -w "/app" \
     composer/composer:2.4.4 $@
