@@ -8,6 +8,8 @@ services:
       dockerfile: app.dev.Dockerfile
     ports:
       - 80:80
+    environment:
+      ENV_MODE: development
     volumes:
       - ./backend:/var/www/html
 
