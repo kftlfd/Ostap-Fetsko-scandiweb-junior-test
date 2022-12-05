@@ -102,6 +102,14 @@ abstract class Model
         return $this->data[$name][self::FIELD_VALUE];
     }
 
+    /**
+     * Helper function, return key from array if set, else default
+     */
+    protected static function array_get(array $arr, $key, $default)
+    {
+        return isset($arr[$key]) ? $arr[$key] : $default;
+    }
+
     /** 
      * Save value and type for a field in data array
      * @param string $field Name of the field
@@ -109,36 +117,42 @@ abstract class Model
      * @param array $options Field attributes
      * @return bool `true` if `$value` has been assigned to the field
      */
-    protected function setField(string $field, $value, array $options = [])
+    protected function setField(string $field, $value, array $options = [
+        self::FIELD_REQUIRED => true,
+        self::FIELD_TYPE => self::TYPE_TEXT,
+        self::FIELD_MAX_LEN => null,
+        self::FIELD_MAX => null,
+        self::FIELD_MIN => null,
+        self::FIELD_NEGATIVE => false,
+        self::FIELD_COMMENT => "",
+    ])
     {
-        $required = $options[self::FIELD_REQUIRED];
-        if (!isset($required)) $required = true;
 
-        $fieldtype = $options[self::FIELD_TYPE];
-        if (!isset($fieldtype)) $fieldtype = self::TYPE_TEXT;
+        $required = static::array_get($options, self::FIELD_REQUIRED, true);
+        $fieldtype = static::array_get($options, self::FIELD_TYPE, self::TYPE_TEXT);
 
-        $prevValue = $this->data[$field] ? $this->data[$field][self::FIELD_VALUE] : null;
+        $prevValue = isset($this->data[$field]) ? $this->data[$field][self::FIELD_VALUE] : null;
         $newValue = $fieldtype === self::TYPE_NUMBER
-            ? static::getSanitizedNumber($value, $options[self::FIELD_NEGATIVE] === true)
+            ? static::getSanitizedNumber($value, static::array_get($options, self::FIELD_NEGATIVE, false) === true)
             : static::getSanitizedString($value);
 
         $this->data[$field] = [
             self::FIELD_VALUE => isset($newValue) ? $newValue : $prevValue,
             self::FIELD_TYPE => $fieldtype,
             self::FIELD_REQUIRED => $required,
-            self::FIELD_COMMENT => $options[self::FIELD_COMMENT]
+            self::FIELD_COMMENT => static::array_get($options, self::FIELD_COMMENT, "")
         ];
 
         if ($fieldtype === self::TYPE_TEXT) {
-            $maxlen = $options[self::FIELD_MAX_LEN];
+            $maxlen = static::array_get($options, self::FIELD_MAX_LEN, null);
             if (is_int($maxlen)) $this->data[$field][self::FIELD_MAX_LEN] = $maxlen;
         }
 
         if ($fieldtype === self::TYPE_NUMBER) {
-            $max = $options[self::FIELD_MAX];
+            $max = static::array_get($options, self::FIELD_MAX, null);
             if (is_int($max) || is_float($max)) $this->data[$field][self::FIELD_MAX] = $max;
 
-            $min = $options[self::FIELD_MIN];
+            $min = static::array_get($options, self::FIELD_MIN, null);
             if (is_int($min) || is_float($min)) $this->data[$field][self::FIELD_MIN] = $min;
         }
 
@@ -207,22 +221,22 @@ abstract class Model
             }
 
             if ($fieldtype === self::TYPE_TEXT) {
-                $maxlen = $info[self::FIELD_MAX_LEN];
-                if (isset($maxlen) && strlen($fieldvalue) > $maxlen) {
+                $maxlen = static::array_get($info, self::FIELD_MAX_LEN, null);
+                if (is_int($maxlen) && strlen($fieldvalue) > $maxlen) {
                     $errors[$field] = "Field '$field' should be less than $maxlen characters long.";
                     continue;
                 }
             }
 
             if ($fieldtype === self::TYPE_NUMBER) {
-                $max = $info[self::FIELD_MAX];
-                if (isset($max) && $fieldvalue > $max) {
+                $max = static::array_get($info, self::FIELD_MAX, null);
+                if (is_numeric($max) && $fieldvalue > $max) {
                     $errors[$field] = "Field '$field' should be less than $max.";
                     continue;
                 }
 
-                $min = $info[self::FIELD_MIN];
-                if (isset($min) && $fieldvalue < $min) {
+                $min = static::array_get($info, self::FIELD_MIN, null);
+                if (is_numeric($min) && $fieldvalue < $min) {
                     $errors[$field] = "Field '$field' should be more than $min.";
                 }
             }
