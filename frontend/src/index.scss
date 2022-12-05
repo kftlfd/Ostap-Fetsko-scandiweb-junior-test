@@ -1,5 +1,6 @@
 $bg: #fff;
 $text: #333;
+$accent: royalblue;
 $border: 1px solid $text;
 
 :root {
@@ -70,7 +71,7 @@ header {
       position: relative;
       padding: 0;
       cursor: pointer;
-      transition: all 0.4s ease;
+      transition: background-color 0.2s ease;
 
       &::before,
       &::after {
@@ -98,6 +99,10 @@ header {
 
       &:hover {
         background-color: #eee;
+      }
+
+      &:focus {
+        outline: 2px solid $accent;
       }
     }
   }
@@ -137,7 +142,7 @@ footer {
   text-decoration: none;
   cursor: pointer;
 
-  transition: all 0.1s ease;
+  transition: background-color 0.2s ease, translate 0.1s ease;
 
   &:hover {
     background-color: #eee;
@@ -149,6 +154,10 @@ footer {
     box-shadow: 0 0 0 0 $text;
   }
 
+  &:focus {
+    outline: 1px solid $accent;
+  }
+
   &.loading {
     background-color: #bbb;
     cursor: default;
@@ -158,12 +167,25 @@ footer {
 .addForm {
   display: grid;
   grid-template-columns: max-content auto;
-  column-gap: 2rem;
-  row-gap: 1rem;
+  align-items: center;
+  column-gap: 1.5rem;
+  row-gap: 1.5rem;
 
   .formInput {
     display: flex;
     flex-direction: column;
+
+    input,
+    select {
+      padding: 0.5rem;
+      border: 1px solid gray;
+      border-radius: 4px;
+      background-color: $bg;
+
+      &:focus {
+        outline: 2px solid $accent;
+      }
+    }
   }
 
   .formError {
@@ -172,7 +194,7 @@ footer {
 
   @media screen and (max-width: 500px) {
     grid-template-columns: auto;
-    row-gap: 0.5rem;
+    row-gap: 0.2rem;
 
     & :nth-child(2n + 3) {
       margin-top: 1rem;
