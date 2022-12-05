@@ -50,7 +50,7 @@ abstract class APIBase
     {
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: ' . join(", ", $this->methods));
-        header('Access-Control-Allow-Headers: X-Requested-With');
+        header('Access-Control-Allow-Headers: *');
         header('Content-Type: application/json');
     }
 
