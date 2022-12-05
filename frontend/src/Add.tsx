@@ -150,13 +150,12 @@ export default class Add extends React.Component<AddProps, AddState> {
           id="productType"
           name="type"
           defaultValue={productCategories[0]}
+          onChange={(e) =>
+            this.setState({ category: e.target.value as ProductCategory })
+          }
         >
           {productCategories.map((id: ProductCategory) => (
-            <option
-              key={id}
-              value={id}
-              onClick={() => this.setState({ category: id })}
-            >
+            <option key={id} value={id}>
               {id}
             </option>
           ))}
