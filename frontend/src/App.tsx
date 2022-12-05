@@ -53,7 +53,15 @@ export function Main(props: { children: React.ReactNode }) {
 }
 
 function Footer(props: {}) {
-  return <footer>Scandiweb Test Assignment</footer>;
+  return (
+    <footer>
+      <span>Scandiweb Test Assignment &bull; </span>
+      <span>Ostap Fetsko &bull; </span>
+      <a href="https://github.com/kftlfd" target={"_blank"}>
+        GitHub
+      </a>
+    </footer>
+  );
 }
 
 function Error() {

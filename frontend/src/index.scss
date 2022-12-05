@@ -121,8 +121,11 @@ main {
 
 footer {
   padding-block: 1rem;
+  background-color: $bg;
   border-top: $border;
   text-align: center;
+  position: sticky;
+  bottom: 0;
 }
 
 .btn {
