@@ -1,7 +1,7 @@
 FROM composer/composer:2.4.4 as backend
 WORKDIR /app
 COPY ./backend .
-RUN composer install && rm composer.json composer.lock
+RUN composer install && rm composer.json composer.lock composer.sh
 
 FROM node:16.18-alpine as frontend
 WORKDIR /app
