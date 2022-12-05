@@ -168,7 +168,7 @@ export default class Add extends React.Component<AddProps, AddState> {
     </>
   );
 
-  AddForm = () => (
+  ProductForm = () => (
     <form id="product_form" className="addForm" ref={this.formRef}>
       <this.InputTextField
         field="sku"
@@ -255,7 +255,7 @@ export default class Add extends React.Component<AddProps, AddState> {
   renderMain = () => (
     <Main>
       {this.state.error && <this.Error />}
-      <this.AddForm />
+      <this.ProductForm />
     </Main>
   );
 

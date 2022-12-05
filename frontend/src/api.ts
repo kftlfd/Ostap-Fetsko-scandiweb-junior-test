@@ -45,7 +45,7 @@ export async function deleteProducts(ids: number[]) {
       throw new Error(err.response?.data);
     } else {
       console.error(err);
-      throw new Error("API Error");
+      throw new Error("Network Error");
     }
   }
 }
@@ -59,7 +59,7 @@ export async function addProduct(body: any) {
       throw new InvalidFormError(err.response?.data);
     } else {
       console.error(err);
-      throw new Error("API error");
+      throw new Error("Network error");
     }
   }
 }
