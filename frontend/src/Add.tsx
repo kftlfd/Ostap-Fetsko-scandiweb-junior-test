@@ -111,6 +111,7 @@ export default class Add extends React.Component<AddProps, AddState> {
     label: string;
     options?: {
       required?: boolean;
+      placeholder?: string;
       min?: number;
       max?: number;
       step?: number;
@@ -126,6 +127,7 @@ export default class Add extends React.Component<AddProps, AddState> {
           id={props.field}
           name={props.field}
           type="number"
+          placeholder={props.options?.placeholder}
           min={props.options?.min ?? 0}
           max={props.options?.max}
           step={props.options?.step ?? 0.01}
@@ -169,11 +171,12 @@ export default class Add extends React.Component<AddProps, AddState> {
   );
 
   ProductForm = () => (
-    <form id="product_form" className="addForm" ref={this.formRef}>
+    <form id="product_form" className="productForm" ref={this.formRef}>
       <this.InputTextField
         field="sku"
         label="SKU"
         options={{
+          placeholder: "Product SKU",
           pattern: "[\\w]{1,100}",
           title:
             "Please use only a-zA-Z0-9_ without spaces (up to 100 characters)",
@@ -183,12 +186,17 @@ export default class Add extends React.Component<AddProps, AddState> {
         field="name"
         label="Name"
         options={{
+          placeholder: "Product Name",
           pattern: "[a-zA-Z0-9!@#$%&*()-_,.:; ]{1,250}",
           title:
             "Allowed characters: a-zA-Z0-9!@#$%&*()-_,.:; and spaces (up to 250 characters)",
         }}
       />
-      <this.InputNumberField field="price" label="Price" />
+      <this.InputNumberField
+        field="price"
+        label="Price"
+        options={{ placeholder: "Product price $0.00" }}
+      />
 
       <this.CategorySwitch />
 
@@ -201,7 +209,7 @@ export default class Add extends React.Component<AddProps, AddState> {
       <this.InputNumberField
         field="size"
         label="Size (MB)"
-        options={{ title: "Please, provide size" }}
+        options={{ title: "Please, provide size", placeholder: "Size 0.00" }}
       />
     ),
 
@@ -210,17 +218,26 @@ export default class Add extends React.Component<AddProps, AddState> {
         <this.InputNumberField
           field="height"
           label="Height (CM)"
-          options={{ title: "Please, provide height" }}
+          options={{
+            title: "Please, provide height",
+            placeholder: "Height 0.00",
+          }}
         />
         <this.InputNumberField
           field="width"
           label="Width (CM)"
-          options={{ title: "Please, provide width" }}
+          options={{
+            title: "Please, provide width",
+            placeholder: "Width 0.00",
+          }}
         />
         <this.InputNumberField
           field="length"
           label="Length (CM)"
-          options={{ title: "Please, provide length" }}
+          options={{
+            title: "Please, provide length",
+            placeholder: "Length 0.00",
+          }}
         />
       </>
     ),
@@ -229,7 +246,10 @@ export default class Add extends React.Component<AddProps, AddState> {
       <this.InputNumberField
         field="weight"
         label="Weight (KG)"
-        options={{ title: "Please, provide weight" }}
+        options={{
+          title: "Please, provide weight",
+          placeholder: "Weight 0.00",
+        }}
       />
     ),
   };

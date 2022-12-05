@@ -78,20 +78,33 @@ export default class List extends React.Component<ListProps, ListState> {
   };
 
   ProductsGrid = () => (
-    <div className="productGrid">
-      {this.state.data.map((p) => (
-        <this.ProductCard key={p.id} p={p} />
-      ))}
-    </div>
+    <>
+      {this.state.data.length < 1 ? (
+        <h3>No products</h3>
+      ) : (
+        <div className="productGrid">
+          {this.state.data.map((p) => (
+            <this.ProductCard key={p.id} p={p} />
+          ))}
+        </div>
+      )}
+    </>
   );
 
   ProductCard = (props: { p: ProductInfo }) => (
     <div className="product">
       <input
+        id={"delete-" + props.p.id}
         type={"checkbox"}
         className={"delete-checkbox"}
         value={props.p.id}
       />
+      <label
+        htmlFor={"delete-" + props.p.id}
+        className={"delete-checkbox-label"}
+      >
+        Delete product with ID {props.p.id}
+      </label>
       <div>{props.p.sku}</div>
       <div>{props.p.name}</div>
       <div>{currencyFormatter.format(props.p.price)}</div>
@@ -118,7 +131,13 @@ export default class List extends React.Component<ListProps, ListState> {
   renderHeader = () => (
     <Header
       heading="ProductList"
-      middle={<button className="refresh-btn" onClick={this.handleRefresh} />}
+      middle={
+        <button
+          className="refresh-btn"
+          aria-label="Refresh"
+          onClick={this.handleRefresh}
+        />
+      }
       buttons={
         <>
           <Link to="/add-product" className="btn">
