@@ -213,8 +213,8 @@ function ProductListPage() {
     const toDelete = document.querySelectorAll(".delete-checkbox:checked");
     toDelete.forEach((el) => ids.push(Number(el.value)));
 
-    fetch(apiUrl, {
-      method: "DELETE",
+    fetch(apiUrl + "delete/", {
+      method: "POST", // "DELETE", hosting provider blocks DELETE method
       body: JSON.stringify(ids),
     })
       .then((res) => {
@@ -311,6 +311,7 @@ function ProductListPage() {
         break;
       case "Furniture":
         description = `Dimensions: ${p.height}x${p.width}x${p.length} KG`;
+        break;
       default:
         break;
     }
@@ -344,12 +345,12 @@ function ProductAddPage() {
     let category = e.target.value;
     document.querySelectorAll(".category").forEach((el) => el.remove());
     document
-      .querySelector("#productForm")
+      .querySelector("#product_form")
       .appendChildren(categoryFields[category]());
   }
 
   function handleSendForm() {
-    const form = document.querySelector("#productForm");
+    const form = document.querySelector("#product_form");
     if (!form || !form.reportValidity()) return;
 
     const formData = Object.fromEntries(new FormData(form));
@@ -468,7 +469,7 @@ function ProductAddPage() {
   function Main() {
     const Form = document.createElement("form");
     Form.classList.add("productForm");
-    Form.id = "productForm";
+    Form.id = "product_form";
 
     const skuField = TextInput("sku", "SKU", "Product SKU");
     const nameField = TextInput("name", "Name", "Product Name");
