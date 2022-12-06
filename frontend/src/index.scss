@@ -49,6 +49,7 @@ header {
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
+  z-index: 10;
 
   .heading {
     margin: 0;
@@ -249,11 +250,11 @@ h3 {
     grid-template-columns: auto;
     row-gap: 0.2rem;
 
-    & :first-child {
+    & label:first-child {
       margin-top: 0;
     }
 
-    & :nth-child(2n + 3) {
+    & label:not(:first-child) {
       margin-top: 1rem;
     }
   }
@@ -280,6 +281,16 @@ h3 {
 
     .formError {
       color: red;
+    }
+  }
+
+  .categoryDescription {
+    grid-column: span 2;
+    font-weight: bold;
+
+    @media screen and (max-width: 500px) {
+      grid-column: unset;
+      margin-top: 1rem;
     }
   }
 }

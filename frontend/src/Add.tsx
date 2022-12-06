@@ -206,15 +206,19 @@ export default class Add extends React.Component<AddProps, AddState> {
 
   categoryFields: CategoryFields = {
     DVD: (
-      <this.InputNumberField
-        field="size"
-        label="Size (MB)"
-        options={{ title: "Please, provide size", placeholder: "Size 0.00" }}
-      />
+      <>
+        <div className="categoryDescription">Please, provide size</div>
+        <this.InputNumberField
+          field="size"
+          label="Size (MB)"
+          options={{ title: "Please, provide size", placeholder: "Size 0.00" }}
+        />
+      </>
     ),
 
     Furniture: (
       <>
+        <div className="categoryDescription">Please, provide dimensions</div>
         <this.InputNumberField
           field="height"
           label="Height (CM)"
@@ -243,14 +247,17 @@ export default class Add extends React.Component<AddProps, AddState> {
     ),
 
     Book: (
-      <this.InputNumberField
-        field="weight"
-        label="Weight (KG)"
-        options={{
-          title: "Please, provide weight",
-          placeholder: "Weight 0.00",
-        }}
-      />
+      <>
+        <div className="categoryDescription">Please, provide weight</div>
+        <this.InputNumberField
+          field="weight"
+          label="Weight (KG)"
+          options={{
+            title: "Please, provide weight",
+            placeholder: "Weight 0.00",
+          }}
+        />
+      </>
     ),
   };
 
