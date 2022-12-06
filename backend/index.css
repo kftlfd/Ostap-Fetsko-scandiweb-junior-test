@@ -1,0 +1,183 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#appRoot {
+  flex-grow: 1;
+  max-width: 1000px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+header,
+main,
+footer {
+  padding-inline: 0.5rem;
+}
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  column-gap: 2rem;
+  row-gap: 0.5rem;
+  padding-block: 2rem 1rem;
+  border-bottom: 1px solid #555;
+  background-color: #fff;
+}
+header .heading {
+  margin: 0;
+  font-size: 2rem;
+}
+header .middle {
+  flex-grow: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+}
+header .right {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+main {
+  flex-grow: 1;
+}
+
+footer {
+  text-align: center;
+  padding-block: 1rem;
+  border-top: 1px solid #555;
+}
+
+h3 {
+  text-align: center;
+  margin-block: 2rem;
+}
+
+.btn {
+  display: block;
+  padding: 0.2rem 0.5rem;
+  background-color: #fff;
+  border: 1px solid #000;
+  border-radius: 0;
+  color: #000;
+  text-decoration: none;
+  font-family: inherit;
+  font-size: medium;
+  font-weight: 400;
+  cursor: pointer;
+  translate: -3px -3px;
+  box-shadow: 3px 3px 0 0 #000;
+}
+.btn:hover {
+  background-color: #eee;
+}
+.btn:active {
+  background-color: #ccc;
+  translate: 0 0;
+  box-shadow: 0 0 0 0 #000;
+}
+.btn:focus {
+  outline: 2px solid royalblue;
+  outline-offset: 0px;
+}
+
+.productsGrid {
+  margin-block: 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+.product {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 1rem;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px 1px #aaa;
+}
+.delete-checkbox {
+  align-self: flex-start;
+  margin: 0;
+  aspect-ratio: 1;
+  height: 1.2rem;
+  accent-color: royalblue;
+}
+.delete-checkbox:focus {
+  outline: 2px solid royalblue;
+  outline-offset: 2px;
+}
+.delete-checkbox-label {
+  opacity: 0;
+  user-select: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.productForm {
+  margin-block: 2rem;
+  display: grid;
+  grid-template-columns: 1fr 4fr;
+  row-gap: 1.5rem;
+  column-gap: 3rem;
+}
+.productForm label {
+  margin-top: 0.5rem;
+}
+.productForm .form-input {
+  display: flex;
+  flex-direction: column;
+}
+.form-input input,
+.form-input select {
+  padding: 0.5rem;
+  border: 1px solid gray;
+  border-radius: 3px;
+}
+.form-input input:focus,
+.form-input select:focus {
+  outline: 2px solid royalblue;
+}
+.productForm .form-error {
+  color: red;
+}
+.productForm .category.description {
+  grid-column: span 2;
+  font-weight: bold;
+}
+@media screen and (max-width: 500px) {
+  .productForm {
+    grid-template-columns: auto;
+    row-gap: 0.2rem;
+  }
+  .productForm label:first-child {
+    margin-top: 0;
+  }
+  .productForm label:not(:first-child) {
+    margin-top: 1.3rem;
+  }
+  .productForm .category.description {
+    grid-column: unset;
+    margin-top: 1rem;
+  }
+}

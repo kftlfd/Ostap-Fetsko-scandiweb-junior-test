@@ -1,5 +1,8 @@
 backend/config/schema.sql
 backend/vendor
+backend/index.html
+backend/index.css
+backend/index.js
 
 frontend/dist
 frontend/node_modules
