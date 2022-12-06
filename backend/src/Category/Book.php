@@ -10,15 +10,17 @@ use App\Product;
  */
 class Book extends Product
 {
+    protected const F_WEIGHT = "weight";
+
     public function __construct(array $attributes)
     {
         parent::__construct($attributes);
-        $this->setWeight($attributes["weight"]);
+        $this->setWeight(static::array_get($attributes, self::F_WEIGHT));
     }
 
     public function setWeight($weight)
     {
-        $this->setField("weight", $weight, [
+        $this->setField(self::F_WEIGHT, $weight, [
             self::FIELD_TYPE => self::TYPE_NUMBER,
             self::FIELD_MAX => 10 ** 8
         ]);
