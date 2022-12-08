@@ -1,9 +1,6 @@
 dist
-
-backend/vendor
-
-frontend/dist
-frontend/node_modules
+vendor
+node_modules
 
 _*.rest
 _*.sh
