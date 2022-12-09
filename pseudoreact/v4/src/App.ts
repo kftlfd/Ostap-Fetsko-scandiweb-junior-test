@@ -9,7 +9,7 @@ export const routerLinks: { [path: string]: string } = {
   productForm: "/add-product",
 };
 
-export function App(): Nodes.NodeElement {
+export const App: Nodes.Component = () => {
   return [
     Router({
       defRoute: () => ErrorPage(),
@@ -20,25 +20,28 @@ export function App(): Nodes.NodeElement {
     }),
     AppFooter(),
   ];
-}
+};
 
-function AppFooter(): Nodes.NodeElement {
-  return Nodes.footer({ children: Nodes.p({ text: "some madness" }) });
-}
+const AppFooter: Nodes.Component = () => {
+  return Nodes.footer({}, [Nodes.p({ text: "some madness, but it's fun" })]);
+};
 
-function ErrorPage() {
+const ErrorPage: Nodes.Component = () => {
   document.title = "Not found";
 
-  function Header(): Nodes.NodeElement {
-    const Heading = Nodes.h3({ text: "Not found", className: "heading" });
-    return Nodes.header({ children: Heading });
-  }
+  const Header: Nodes.Component = () => {
+    return Nodes.header({}, [
+      Nodes.h3({ text: "Not found", className: "heading" }),
+    ]);
+  };
 
-  function Main(): Nodes.NodeElement {
-    const Link = RouterLink({ href: routerLinks.root, text: "To Homepage" });
-    const Heading = Nodes.h3({ children: Link });
-    return Nodes.main({ children: Heading });
-  }
+  const Main: Nodes.Component = () => {
+    return Nodes.main({}, [
+      Nodes.h3({}, [
+        RouterLink({ href: routerLinks.root, text: "To Homepage" }),
+      ]),
+    ]);
+  };
 
   return [Header(), Main()];
-}
+};

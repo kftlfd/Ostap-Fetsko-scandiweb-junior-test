@@ -5,7 +5,7 @@ import { loadProducts, deleteProducts } from "./api";
 import { RouterLink } from "./NodesRouter";
 import { routerLinks } from "./App";
 
-export function ProductList(): Nodes.NodeElement {
+export const ProductList: Nodes.Component = () => {
   document.title = "Product List";
 
   if (appState.ProductListPage.loading) fetchProducts();
@@ -53,32 +53,32 @@ export function ProductList(): Nodes.NodeElement {
       });
   }
 
-  function Header() {
-    const Heading = Nodes.h3({ text: "Product List", className: "heading" });
+  const Header: Nodes.Component = () => {
+    return Nodes.header({}, [
+      Nodes.h3({ text: "Product List", className: "heading" }),
+      Nodes.div({ className: "middle" }, [
+        Nodes.button({
+          text: "Refresh",
+          className: "btn",
+          onClick: handleRefresh,
+        }),
+      ]),
+      Nodes.div({ className: "right" }, [
+        RouterLink({
+          href: routerLinks.productForm,
+          text: "ADD",
+          className: "btn",
+        }),
+        Nodes.button({
+          text: "MASS DELETE",
+          className: "btn",
+          onClick: handleDelete,
+        }),
+      ]),
+    ]);
+  };
 
-    const RefresBtn = Nodes.button({
-      text: "Refresh",
-      className: "btn",
-      onClick: handleRefresh,
-    });
-    const Middle = Nodes.div({ className: "middle", children: RefresBtn });
-
-    const Add = RouterLink({
-      href: routerLinks.productForm,
-      text: "ADD",
-      className: "btn",
-    });
-    const Delete = Nodes.button({
-      text: "MASS DELETE",
-      className: "btn",
-      onClick: handleDelete,
-    });
-    const Buttons = Nodes.div({ className: "right", children: [Add, Delete] });
-
-    return Nodes.header({ children: [Heading, Middle, Buttons] });
-  }
-
-  function Main() {
+  const Main: Nodes.Component = () => {
     let content;
     if (appState.ProductListPage.error) {
       content = Error;
@@ -89,33 +89,33 @@ export function ProductList(): Nodes.NodeElement {
     } else {
       content = ProductsGrid;
     }
-    return Nodes.main({ children: content() });
-  }
+    return Nodes.main({}, content());
+  };
 
-  function Error() {
+  const Error: Nodes.Component = () => {
     return Nodes.h3({ text: "Error: " + appState.ProductListPage.error });
-  }
+  };
 
-  function Loading() {
+  const Loading: Nodes.Component = () => {
     return Nodes.h3({ text: "Loading..." });
-  }
+  };
 
-  function Empty() {
+  const Empty: Nodes.Component = () => {
     return Nodes.h3({ text: "No products" });
-  }
+  };
 
-  function ProductsGrid() {
+  const ProductsGrid: Nodes.Component = () => {
     const products = appState.ProductListPage.data
       .sort((a, b) => b.id - a.id)
       .map((p) => Product({ product: p }));
 
-    return Nodes.div({ className: "productsGrid", children: products });
-  }
+    return Nodes.div({ className: "productsGrid" }, products);
+  };
 
   return [Header(), Main()];
-}
+};
 
-function Product(props: { product: Product }): Nodes.NodeElement {
+const Product: Nodes.Component = (props: { product: Product }) => {
   const p = props.product;
 
   const checkId = `checkbox${p.id}`;
@@ -146,8 +146,13 @@ function Product(props: { product: Product }): Nodes.NodeElement {
   };
   const Details = Nodes.div({ text: descriptions[p.type](p) });
 
-  return Nodes.div({
-    className: "product",
-    children: [Check, Checklabel, Sku, Name, Price, Type, Details],
-  });
-}
+  return Nodes.div({ className: "product" }, [
+    Check,
+    Checklabel,
+    Sku,
+    Name,
+    Price,
+    Type,
+    Details,
+  ]);
+};

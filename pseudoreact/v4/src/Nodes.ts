@@ -2,6 +2,10 @@ export * as default from "./Nodes";
 
 export type NodeElement = HTMLElement | HTMLElement[] | NodeElement[];
 
+export interface Component {
+  (props?: any, children?: NodeElement): NodeElement;
+}
+
 export function appendChildren(element: HTMLElement, children: NodeElement) {
   if (children instanceof Array) {
     children.forEach((node) => appendChildren(element, node));
@@ -40,8 +44,8 @@ function htmlElementFactory<
   function elementFactory(
     props: Props & {
       className?: string;
-      children?: NodeElement;
-    }
+    },
+    children?: NodeElement
   ): El {
     const Element = document.createElement(schema.tagName);
 
@@ -60,7 +64,7 @@ function htmlElementFactory<
     });
 
     if (props.className) Element.className = props.className;
-    if (props.children) appendChildren(Element, props.children);
+    if (children) appendChildren(Element, children);
 
     return Element as El;
   }

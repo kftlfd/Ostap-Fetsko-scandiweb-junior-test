@@ -5,7 +5,7 @@ import { categories, saveProduct } from "./api";
 import { RouterLink, routerNavigate } from "./NodesRouter";
 import { routerLinks } from "./App";
 
-export function ProductForm(): Nodes.NodeElement {
+export const ProductForm: Nodes.Component = () => {
   document.title = "Product Add";
 
   const formId = "product_form";
@@ -108,25 +108,25 @@ export function ProductForm(): Nodes.NodeElement {
     ],
   };
 
-  function Header() {
-    const Heading = Nodes.h3({ text: "Product Add", className: "heading" });
+  const Header: Nodes.Component = () => {
+    return Nodes.header({}, [
+      Nodes.h3({ text: "Product Add", className: "heading" }),
+      Nodes.div({ className: "right" }, [
+        Nodes.button({
+          text: "Save",
+          className: "btn",
+          onClick: handleSendForm,
+        }),
+        RouterLink({
+          href: routerLinks.productList,
+          text: "Cancel",
+          className: "btn",
+        }),
+      ]),
+    ]);
+  };
 
-    const Save = Nodes.button({
-      text: "Save",
-      className: "btn",
-      onClick: handleSendForm,
-    });
-    const Cancel = RouterLink({
-      href: routerLinks.productList,
-      text: "Cancel",
-      className: "btn",
-    });
-    const Buttons = Nodes.div({ className: "right", children: [Save, Cancel] });
-
-    return Nodes.header({ children: [Heading, Buttons] });
-  }
-
-  function Main() {
+  const Main: Nodes.Component = () => {
     const SkuField = TextInput({
       id: "sku",
       label: "SKU",
@@ -154,22 +154,19 @@ export function ProductForm(): Nodes.NodeElement {
       onChange: handleCategoryChange,
     });
 
-    const Form = Nodes.form({
-      id: formId,
-      className: "productForm",
-      children: [
+    return Nodes.main({}, [
+      Nodes.form({ id: formId, className: "productForm" }, [
         SkuField,
         NameField,
         PriceField,
         TypeSwitch,
         categoryFields[categories[0]](),
-      ],
-    });
-    return Nodes.main({ children: Form });
-  }
+      ]),
+    ]);
+  };
 
   return [Header(), Main()];
-}
+};
 
 function clearError(id: string) {
   return () => {
@@ -180,14 +177,14 @@ function clearError(id: string) {
   };
 }
 
-function TextInput(props: {
+const TextInput: Nodes.Component = (props: {
   id: string;
   label: string;
   placeholder?: string;
   className?: string;
   pattern?: string;
   title?: string;
-}) {
+}) => {
   const Input = Nodes.input({
     id: props.id,
     name: props.id,
@@ -206,15 +203,15 @@ function TextInput(props: {
     children: Input,
     className: props.className,
   });
-}
+};
 
-function NumberInput(props: {
+const NumberInput: Nodes.Component = (props: {
   id: string;
   label: string;
   placeholder?: string;
   className?: string;
   title?: string;
-}) {
+}) => {
   const Input = Nodes.input({
     id: props.id,
     name: props.id,
@@ -234,55 +231,55 @@ function NumberInput(props: {
     children: Input,
     className: props.className,
   });
-}
+};
 
-function SelectInput(props: {
+const SelectInput: Nodes.Component = (props: {
   id: string;
   name: string;
   label: string;
   options: string[];
   onChange?: Function;
-}): Nodes.NodeElement {
-  const Input = Nodes.select({
-    id: props.id,
-    name: props.name,
-    onChange: props.onChange,
-    children: props.options.map((option) =>
+}) => {
+  const Input = Nodes.select(
+    {
+      id: props.id,
+      name: props.name,
+      onChange: props.onChange,
+    },
+    props.options.map((option) =>
       Nodes.option({
         id: option,
         value: option,
         text: option,
       })
-    ),
-  });
+    )
+  );
 
   return FormSection({
     inputId: props.id,
     label: props.label,
     children: Input,
   });
-}
+};
 
-function FormSection(props: {
+const FormSection: Nodes.Component = (props: {
   inputId: string;
   label: string;
   className?: string;
   children: HTMLElement | HTMLElement[];
-}): Nodes.NodeElement {
-  const Label = Nodes.label({
-    htmlFor: props.inputId,
-    text: props.label,
-    className: props.className,
-  });
-
+}) => {
   const InputError = Nodes.div({ className: "form-error" });
   InputError.dataset.formError = props.inputId;
 
-  const InputDiv = Nodes.div({
-    className: "form-input",
-    children: [props.children, InputError],
-  });
-  if (props.className) InputDiv.classList.add(props.className);
-
-  return [Label, InputDiv];
-}
+  return [
+    Nodes.label({
+      htmlFor: props.inputId,
+      text: props.label,
+      className: props.className,
+    }),
+    Nodes.div({ className: "form-input " + (props.className ?? "") }, [
+      props.children,
+      InputError,
+    ]),
+  ];
+};
