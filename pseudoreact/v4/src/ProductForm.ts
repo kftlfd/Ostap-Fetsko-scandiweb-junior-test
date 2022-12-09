@@ -268,9 +268,6 @@ const FormSection: Nodes.Component = (props: {
   className?: string;
   children: HTMLElement | HTMLElement[];
 }) => {
-  const InputError = Nodes.div({ className: "form-error" });
-  InputError.dataset.formError = props.inputId;
-
   return [
     Nodes.label({
       htmlFor: props.inputId,
@@ -279,7 +276,10 @@ const FormSection: Nodes.Component = (props: {
     }),
     Nodes.div({ className: "form-input " + (props.className ?? "") }, [
       props.children,
-      InputError,
+      Nodes.div({
+        className: "form-error",
+        dataset: { formError: props.inputId },
+      }),
     ]),
   ];
 };

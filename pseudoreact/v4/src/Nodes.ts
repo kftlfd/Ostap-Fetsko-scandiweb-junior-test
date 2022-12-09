@@ -26,6 +26,12 @@ export function Renderer(id: string, component: () => NodeElement) {
   };
 }
 
+type DefaultProps = {
+  id?: string;
+  className?: string;
+  dataset?: { [attr: string]: string };
+};
+
 function htmlElementFactory<
   El extends HTMLElement,
   Props extends { [propName: string]: any }
@@ -42,9 +48,7 @@ function htmlElementFactory<
   const optAttrs = schema.optionalAttrs ?? {};
 
   function elementFactory(
-    props: Props & {
-      className?: string;
-    },
+    props: Props & DefaultProps,
     children?: NodeElement
   ): El {
     const Element = document.createElement(schema.tagName);
@@ -63,7 +67,13 @@ function htmlElementFactory<
       }
     });
 
+    if (props.id) Element.id = props.id;
     if (props.className) Element.className = props.className;
+    if (props.dataset) {
+      Object.keys(props.dataset).forEach(
+        (attr) => (Element.dataset[attr] = props.dataset?.[attr])
+      );
+    }
     if (children) appendChildren(Element, children);
 
     return Element as El;
@@ -136,16 +146,8 @@ export const h3 = htmlElementFactory<
   },
 });
 
-export const form = htmlElementFactory<
-  HTMLFormElement,
-  {
-    id?: string;
-  }
->({
+export const form = htmlElementFactory<HTMLFormElement, {}>({
   tagName: "form",
-  optionalAttrs: {
-    id: "id",
-  },
 });
 
 export const label = htmlElementFactory<
@@ -167,7 +169,6 @@ export const input = htmlElementFactory<
   {
     name: string;
     type: "text" | "number" | "checkbox";
-    id?: string;
     value?: string;
     required?: boolean;
     placeholder?: string;
@@ -185,7 +186,6 @@ export const input = htmlElementFactory<
     type: "type",
   },
   optionalAttrs: {
-    id: "id",
     value: "value",
     required: "required",
     placeholder: "placeholder",
@@ -200,14 +200,12 @@ export const input = htmlElementFactory<
 export const select = htmlElementFactory<
   HTMLSelectElement,
   {
-    id: string;
     name: string;
     onChange?: Function;
   }
 >({
   tagName: "select",
   requiredAttrs: {
-    id: "id",
     name: "name",
   },
   optionalAttrs: {
@@ -219,7 +217,6 @@ export const option = htmlElementFactory<
   HTMLOptionElement,
   {
     text: string;
-    id?: string;
     value?: string;
   }
 >({
@@ -228,7 +225,6 @@ export const option = htmlElementFactory<
     text: "innerText",
   },
   optionalAttrs: {
-    id: "id",
     value: "value",
   },
 });
