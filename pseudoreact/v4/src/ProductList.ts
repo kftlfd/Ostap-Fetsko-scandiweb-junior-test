@@ -57,11 +57,14 @@ export const ProductList: Nodes.Component = () => {
     return Nodes.header({}, [
       Nodes.h3({ text: "Product List", className: "heading" }),
       Nodes.div({ className: "middle" }, [
-        Nodes.button({
-          text: "Refresh",
-          className: "btn",
-          onClick: handleRefresh,
-        }),
+        Nodes.button(
+          {
+            text: "",
+            className: "refresh-btn",
+            onClick: handleRefresh,
+          },
+          [Nodes.img({ src: "/refresh.svg" })]
+        ),
       ]),
       Nodes.div({ className: "right" }, [
         RouterLink({
@@ -71,7 +74,7 @@ export const ProductList: Nodes.Component = () => {
         }),
         Nodes.button({
           text: "MASS DELETE",
-          className: "btn",
+          className: "btn btn-danger",
           onClick: handleDelete,
         }),
       ]),

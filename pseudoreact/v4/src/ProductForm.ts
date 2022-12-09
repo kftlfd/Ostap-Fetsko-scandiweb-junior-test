@@ -114,7 +114,7 @@ export const ProductForm: Nodes.Component = () => {
       Nodes.div({ className: "right" }, [
         Nodes.button({
           text: "Save",
-          className: "btn",
+          className: "btn btn-success",
           onClick: handleSendForm,
         }),
         RouterLink({

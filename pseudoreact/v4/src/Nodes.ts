@@ -233,6 +233,24 @@ export const option = htmlElementFactory<
   },
 });
 
+export const img = htmlElementFactory<
+  HTMLImageElement,
+  {
+    src: string;
+    width?: number;
+    height?: number;
+  }
+>({
+  tagName: "img",
+  requiredAttrs: {
+    src: "src",
+  },
+  optionalAttrs: {
+    width: "width",
+    height: "height",
+  },
+});
+
 export const header = htmlElementFactory<HTMLElement, {}>({
   tagName: "header",
 });
