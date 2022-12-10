@@ -1,5 +1,4 @@
-import Nodes from "./Nodes";
-import { Router, RouterLink } from "./NodesRouter";
+import Nodes, { Router, RouterLink } from "./Nodes";
 import { ProductList } from "./ProductList";
 import { ProductForm } from "./ProductForm";
 

@@ -1,8 +1,7 @@
-import Nodes from "./Nodes";
-import { appState } from ".";
+import Nodes, { RouterLink, routerNavigate } from "./Nodes";
+import { state, dispatch } from "./state";
 import type { ProductCategory } from "./api";
 import { categories, saveProduct } from "./api";
-import { RouterLink, routerNavigate } from "./NodesRouter";
 import { routerLinks } from "./App";
 
 export const ProductForm: Nodes.Component = () => {
@@ -36,7 +35,11 @@ export const ProductForm: Nodes.Component = () => {
       .then((res) => {
         if (res.ok) {
           res.json().then((product) => {
-            appState.ProductListPage.data.push(product);
+            dispatch({
+              ProductListPage: {
+                data: [...state.ProductListPage.data, product],
+              },
+            });
             routerNavigate(routerLinks.productList);
           });
         } else {

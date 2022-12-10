@@ -1,33 +1,31 @@
-import Nodes from "./Nodes";
-import { appState, renderApp } from ".";
+import Nodes, { RouterLink } from "./Nodes";
+import { state, dispatch } from "./state";
 import type { Product, ProductCategory } from "./api";
 import { loadProducts, deleteProducts } from "./api";
-import { RouterLink } from "./NodesRouter";
 import { routerLinks } from "./App";
 
 export const ProductList: Nodes.Component = () => {
   document.title = "Product List";
 
-  if (appState.ProductListPage.loading) fetchProducts();
+  if (state.ProductListPage.loading) fetchProducts();
 
   function fetchProducts() {
     loadProducts()
       .then((res) => {
-        appState.ProductListPage.data = res;
+        dispatch({
+          ProductListPage: { loading: false, error: null, data: res },
+        });
       })
       .catch((err) => {
         console.error(err);
-        appState.ProductListPage.error = "Failed to load products";
-      })
-      .finally(() => {
-        appState.ProductListPage.loading = false;
-        renderApp();
+        dispatch({
+          ProductListPage: { loading: false, error: "Failed to load products" },
+        });
       });
   }
 
   function handleRefresh() {
-    appState.ProductListPage.loading = true;
-    renderApp();
+    dispatch({ ProductListPage: { loading: true } });
   }
 
   function handleDelete() {
@@ -83,11 +81,11 @@ export const ProductList: Nodes.Component = () => {
 
   const Main: Nodes.Component = () => {
     let content;
-    if (appState.ProductListPage.error) {
+    if (state.ProductListPage.error) {
       content = Error;
-    } else if (appState.ProductListPage.loading) {
+    } else if (state.ProductListPage.loading) {
       content = Loading;
-    } else if (appState.ProductListPage.data.length < 1) {
+    } else if (state.ProductListPage.data.length < 1) {
       content = Empty;
     } else {
       content = ProductsGrid;
@@ -96,7 +94,7 @@ export const ProductList: Nodes.Component = () => {
   };
 
   const Error: Nodes.Component = () => {
-    return Nodes.h3({ text: "Error: " + appState.ProductListPage.error });
+    return Nodes.h3({ text: "Error: " + state.ProductListPage.error });
   };
 
   const Loading: Nodes.Component = () => {
@@ -108,7 +106,7 @@ export const ProductList: Nodes.Component = () => {
   };
 
   const ProductsGrid: Nodes.Component = () => {
-    const products = appState.ProductListPage.data
+    const products = state.ProductListPage.data
       .sort((a, b) => b.id - a.id)
       .map((p) => Product({ product: p }));
 

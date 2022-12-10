@@ -6,6 +6,12 @@ export interface Component {
   (props?: any, children?: NodeElement): NodeElement;
 }
 
+// ********************************************************
+// *
+// *   Rendering
+// *
+// ********************************************************
+
 export function appendChildren(element: HTMLElement, children: NodeElement) {
   if (children instanceof Array) {
     children.forEach((node) => appendChildren(element, node));
@@ -14,17 +20,107 @@ export function appendChildren(element: HTMLElement, children: NodeElement) {
   }
 }
 
-export function Renderer(id: string, component: () => NodeElement) {
-  const root: HTMLDivElement | null = document.querySelector("div#" + id);
-  if (!root) {
-    throw new Error(`App root 'div#${id}' not found.`);
-  }
+const renderConfig: {
+  rootId: string;
+  component: () => NodeElement;
+} = {
+  rootId: "",
+  component: () => [],
+};
 
-  return () => {
-    root.innerHTML = "";
-    appendChildren(root, component());
-  };
+function render() {
+  const root: HTMLDivElement | null = document.querySelector(
+    "div#" + renderConfig.rootId
+  );
+  if (!root)
+    throw new Error(`App root 'div#${renderConfig.rootId}' not found.`);
+  root.innerHTML = "";
+  appendChildren(root, renderConfig.component());
 }
+
+export function renderRoot(rootId: string, component: () => NodeElement) {
+  renderConfig.rootId = rootId;
+  renderConfig.component = component;
+  window.onpopstate = render;
+  render();
+}
+
+// ********************************************************
+// *
+// *   State
+// *
+// ********************************************************
+
+type State = { [k: string]: any };
+const state: State = {};
+
+function setState<S extends State>(newState: S) {
+  Object.keys(newState).forEach((stateName) => {
+    state[stateName] = {
+      ...state[stateName],
+      ...newState[stateName],
+    };
+  });
+}
+
+type RecursivePartial<T> = {
+  [P in keyof T]?: RecursivePartial<T[P]>;
+};
+
+export function configureState<S extends State>(initialState: S) {
+  setState(initialState);
+
+  const dispatch = (newState: RecursivePartial<S>) => {
+    setState(newState);
+    render();
+  };
+
+  return { state: state as S, dispatch };
+}
+
+// ********************************************************
+// *
+// *   Routing
+// *
+// ********************************************************
+
+export function routerNavigate(path: string) {
+  window.history.pushState({ path }, "", path);
+  render();
+}
+
+export const Router: Component = (props: {
+  defRoute: () => NodeElement;
+  routes: {
+    [path: string]: () => NodeElement;
+  };
+}) => {
+  const currPath = window.location.pathname;
+  const currRoute = props.routes[currPath] ?? props.defRoute;
+  return currRoute();
+};
+
+export const RouterLink: Component = (
+  props: {
+    href: string;
+    text: string;
+    className?: string;
+  },
+  children
+) => {
+  const Link = a(props, children);
+  Link.onclick = (e) => {
+    e.preventDefault();
+    routerNavigate(props.href);
+  };
+  return [Link];
+};
+
+// ********************************************************
+// *
+// *   HTML elements
+// *
+// ********************************************************
 
 type DefaultProps = {
   id?: string;
