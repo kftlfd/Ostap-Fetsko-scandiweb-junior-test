@@ -158,6 +158,35 @@ h3 {
   }
 }
 
+@mixin fancy-checkboxes {
+  .delete-checkbox {
+    position: absolute;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    background-color: $color-bg;
+    box-shadow: 0 0 10px 10px $color-bg;
+    &:checked,
+    &:hover,
+    &:focus {
+      opacity: 1;
+    }
+  }
+  &:hover,
+  &:focus {
+    .delete-checkbox {
+      opacity: 1;
+    }
+  }
+  .delete-checkbox-label {
+    inset: 0;
+    z-index: 0;
+  }
+  & div {
+    z-index: 1;
+  }
+}
+
 .productsGrid {
   @include main-spacing;
   display: grid;
@@ -173,6 +202,12 @@ h3 {
     padding: 1rem;
     border-radius: $border-radius;
     box-shadow: 0 2px 5px 1px #aaa;
+    @include fancy-checkboxes;
+
+    & div {
+      word-break: break-all;
+      text-align: center;
+    }
 
     .delete-checkbox {
       align-self: flex-start;
@@ -180,6 +215,7 @@ h3 {
       aspect-ratio: 1;
       height: 1.2rem;
       accent-color: royalblue;
+      cursor: pointer;
       &:focus {
         outline: 2px solid royalblue;
         outline-offset: 2px;
