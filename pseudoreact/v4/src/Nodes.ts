@@ -2,8 +2,8 @@ export * as default from "./Nodes";
 
 export type NodeElement = HTMLElement | HTMLElement[] | NodeElement[];
 
-export interface Component {
-  (props?: any, children?: NodeElement): NodeElement;
+export interface Component<Props> {
+  (props: Props, children?: NodeElement): NodeElement;
 }
 
 // ********************************************************
@@ -89,25 +89,22 @@ export function routerNavigate(path: string) {
   render();
 }
 
-export const Router: Component = (props: {
+export const Router: Component<{
   defRoute: () => NodeElement;
   routes: {
     [path: string]: () => NodeElement;
   };
-}) => {
+}> = (props) => {
   const currPath = window.location.pathname;
   const currRoute = props.routes[currPath] ?? props.defRoute;
   return currRoute();
 };
 
-export const RouterLink: Component = (
-  props: {
-    href: string;
-    text: string;
-    className?: string;
-  },
-  children
-) => {
+export const RouterLink: Component<{
+  href: string;
+  text: string;
+  className?: string;
+}> = (props, children) => {
   const Link = a(props, children);
   Link.onclick = (e) => {
     e.preventDefault();

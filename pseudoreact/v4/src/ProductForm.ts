@@ -4,7 +4,7 @@ import type { ProductCategory } from "./api";
 import { categories, saveProduct } from "./api";
 import { routerLinks } from "./App";
 
-export const ProductForm: Nodes.Component = () => {
+export const ProductForm: Nodes.Component<{}> = () => {
   document.title = "Product Add";
 
   const formId = "product_form";
@@ -18,7 +18,9 @@ export const ProductForm: Nodes.Component = () => {
 
   function handleCategoryChange(e: any) {
     const category = e.target.value as ProductCategory;
-    document.querySelectorAll(".category").forEach((el) => el.remove());
+    document
+      .querySelectorAll("[data-form-section]")
+      .forEach((el) => el.remove());
 
     const form = findProductForm();
     if (form) Nodes.appendChildren(form, categoryFields[category]());
@@ -57,61 +59,64 @@ export const ProductForm: Nodes.Component = () => {
   }
 
   const categoryFields: {
-    [category in ProductCategory]: () => Nodes.NodeElement;
+    [category in ProductCategory]: (section?: string) => Nodes.NodeElement;
   } = {
-    DVD: () => [
+    DVD: (section = "DVD") => [
       Nodes.div({
-        className: "category description",
+        className: "category-description",
         text: "Please, provide size",
+        dataset: { formSection: section },
       }),
       NumberInput({
         id: "size",
         label: "Size (MB)",
         placeholder: "Size 0.00",
-        className: "category",
+        section,
       }),
     ],
 
-    Furniture: () => [
+    Furniture: (section = "Furniture") => [
       Nodes.div({
-        className: "category description",
+        className: "category-description",
         text: "Please, provide dimensions",
+        dataset: { formSection: section },
       }),
       NumberInput({
         id: "height",
         label: "Height (CM)",
         placeholder: "Height 0.00",
-        className: "category",
+        section,
       }),
       NumberInput({
         id: "width",
         label: "Width (CM)",
         placeholder: "Width 0.00",
-        className: "category",
+        section,
       }),
       NumberInput({
         id: "length",
         label: "Length (CM)",
         placeholder: "Length 0.00",
-        className: "category",
+        section,
       }),
     ],
 
-    Book: () => [
+    Book: (section = "Book") => [
       Nodes.div({
-        className: "category description",
+        className: "category-description",
         text: "Please, provide weight",
+        dataset: { formSection: section },
       }),
       NumberInput({
         id: "weight",
         label: "Weight (KG)",
         placeholder: "Weight 0.00",
-        className: "category",
+        section,
       }),
     ],
   };
 
-  const Header: Nodes.Component = () => {
+  const Header: Nodes.Component<{}> = () => {
     return Nodes.header({}, [
       Nodes.h3({ text: "Product Add", className: "heading" }),
       Nodes.div({ className: "right" }, [
@@ -129,7 +134,7 @@ export const ProductForm: Nodes.Component = () => {
     ]);
   };
 
-  const Main: Nodes.Component = () => {
+  const Main: Nodes.Component<{}> = () => {
     const SkuField = TextInput({
       id: "sku",
       label: "SKU",
@@ -168,7 +173,7 @@ export const ProductForm: Nodes.Component = () => {
     ]);
   };
 
-  return [Header(), Main()];
+  return [Header({}), Main({})];
 };
 
 function clearError(id: string) {
@@ -180,14 +185,15 @@ function clearError(id: string) {
   };
 }
 
-const TextInput: Nodes.Component = (props: {
+const TextInput: Nodes.Component<{
   id: string;
   label: string;
   placeholder?: string;
   className?: string;
   pattern?: string;
   title?: string;
-}) => {
+  section?: string;
+}> = (props) => {
   const Input = Nodes.input({
     id: props.id,
     name: props.id,
@@ -205,16 +211,18 @@ const TextInput: Nodes.Component = (props: {
     label: props.label,
     children: Input,
     className: props.className,
+    section: props.section,
   });
 };
 
-const NumberInput: Nodes.Component = (props: {
+const NumberInput: Nodes.Component<{
   id: string;
   label: string;
   placeholder?: string;
   className?: string;
   title?: string;
-}) => {
+  section?: string;
+}> = (props) => {
   const Input = Nodes.input({
     id: props.id,
     name: props.id,
@@ -233,16 +241,17 @@ const NumberInput: Nodes.Component = (props: {
     label: props.label,
     children: Input,
     className: props.className,
+    section: props.section,
   });
 };
 
-const SelectInput: Nodes.Component = (props: {
+const SelectInput: Nodes.Component<{
   id: string;
   name: string;
   label: string;
   options: string[];
   onChange?: Function;
-}) => {
+}> = (props) => {
   const Input = Nodes.select(
     {
       id: props.id,
@@ -265,24 +274,32 @@ const SelectInput: Nodes.Component = (props: {
   });
 };
 
-const FormSection: Nodes.Component = (props: {
+const FormSection: Nodes.Component<{
   inputId: string;
   label: string;
+  section?: string;
   className?: string;
   children: HTMLElement | HTMLElement[];
-}) => {
+}> = (props) => {
   return [
     Nodes.label({
       htmlFor: props.inputId,
       text: props.label,
       className: props.className,
+      dataset: props.section ? { formSection: props.section } : {},
     }),
-    Nodes.div({ className: "form-input " + (props.className ?? "") }, [
-      props.children,
-      Nodes.div({
-        className: "form-error",
-        dataset: { formError: props.inputId },
-      }),
-    ]),
+    Nodes.div(
+      {
+        className: "form-input " + (props.className ?? ""),
+        dataset: props.section ? { formSection: props.section } : {},
+      },
+      [
+        props.children,
+        Nodes.div({
+          className: "form-error",
+          dataset: { formError: props.inputId },
+        }),
+      ]
+    ),
   ];
 };
