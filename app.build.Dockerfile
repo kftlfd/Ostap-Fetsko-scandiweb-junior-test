@@ -3,7 +3,7 @@ RUN apt update && apt install -y git zip unzip
 COPY --from=composer/composer:2.4.4-bin /composer /usr/bin/composer
 WORKDIR /app
 COPY ./backend .
-RUN composer install && rm composer.*
+RUN composer install && composer dump-autoload -o && rm composer.*
 
 FROM node:16.18-alpine as frontend
 WORKDIR /app
