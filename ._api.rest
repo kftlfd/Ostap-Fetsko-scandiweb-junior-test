@@ -1,0 +1,33 @@
+OPTIONS  http://localhost/api/ HTTP/1.1
+
+###
+
+GET http://localhost/api/ HTTP/1.1
+
+###
+
+POST http://localhost/api/ HTTP/1.1
+content-type: application/json
+
+{
+    "sku": "sku2",
+    "name": "d",
+    "price": 2,
+    "type": "Book",
+    "size": 2.75,
+    "height": 2.8,
+    "width": 1,
+    "length": 3,
+    "weight": 4.56
+}
+
+###
+
+DELETE   http://localhost/api/ HTTP/1.1
+content-type: application/json
+
+[39]
+
+###
+
+GET http://localhost/src/ HTTP/1.1
