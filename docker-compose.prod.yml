@@ -18,7 +18,7 @@ services:
       - ./backend/config/db.env
     volumes:
       - ./backend/config/schema.sql:/docker-entrypoint-initdb.d/schema.sql
-      - prod-db:/var/lib/mysql
-
-volumes:
-  prod-db:
+      # - prod-db:/var/lib/mysql
+      - ./.db:/var/lib/mysql
+# volumes:
+# prod-db:

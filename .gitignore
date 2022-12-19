@@ -1,7 +1,7 @@
 dist
 vendor
 node_modules
-db
+.db
 
 _*.rest
 _*.sh

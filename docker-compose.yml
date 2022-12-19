@@ -22,7 +22,8 @@ services:
       - ./backend/config/db.env
     volumes:
       - ./backend/config/schema.sql:/docker-entrypoint-initdb.d/schema.sql
-      - db:/var/lib/mysql
+      # - db:/var/lib/mysql
+      - ./.db:/var/lib/mysql
 
   adminer:
     image: adminer:4.8.1
@@ -58,6 +59,5 @@ services:
     command: cp -r /var/www/html/. /dist/
     profiles:
       - dist
-
-volumes:
-  db:
+# volumes:
+# db:
