@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  web:
+    build: .
+    ports:
+      - 80:80
+    env_file:
+      - ./db.env
+    volumes:
+      - ./v3:/var/www/html
+
+  mysql:
+    image: mysql:5.7-debian
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+    env_file:
+      - ./db.env
+    volumes:
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ./db:/var/lib/mysql

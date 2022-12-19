@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link href="index.css" rel="stylesheet" type="text/css" />
+  <title>Product Add</title>
+</head>
+
+<body>
+  <header>
+    <div class="heading">Product Add</div>
+    <button class="btn" onclick="saveProduct()">Save</button>
+    <a href="/" class="btn">Cancel</a>
+  </header>
+
+  <main>
+    <noscript>
+      <h3>Please enable JavaScript</h3>
+    </noscript>
+
+    <form id="product_form" class="product-form" data-product-form>
+      <div class="form-section">
+        <label>SKU</label>
+        <div class="form-input">
+          <input id="sku" name="sku" type="text" required />
+          <div data-form-error="sku"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <label>Name</label>
+        <div class="form-input">
+          <input id="name" name="name" type="text" required />
+          <div data-form-error="name"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <label>Price</label>
+        <div class="form-input">
+          <input id="price" name="price" type="number" required />
+          <div data-form-error="price"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <label>Type Switch</label>
+        <div class="form-input">
+          <select id="ProductType" name="type" data-product-typeswitch>
+            <option value="DVD">DVD</option>
+            <option value="Furniture">Furniture</option>
+            <option value="Book">Book</option>
+          </select>
+          <div data-form-error="sku"></div>
+        </div>
+      </div>
+
+      <div class="form-section" data-form-section="DVD">
+        <label>Size</label>
+        <div class="form-input">
+          <input id="size" name="size" type="number" required />
+          <div data-form-error="size"></div>
+        </div>
+      </div>
+
+      <div class="form-section" data-form-section="Furniture">
+        <label>Height</label>
+        <div class="form-input">
+          <input id="height" name="height" type="number" required />
+          <div data-form-error="height"></div>
+        </div>
+
+        <label>Width</label>
+        <div class="form-input">
+          <input id="width" name="width" type="number" required />
+          <div data-form-error="width"></div>
+        </div>
+
+        <label>Length</label>
+        <div class="form-input">
+          <input id="length" name="length" type="number" required />
+          <div data-form-error="length"></div>
+        </div>
+      </div>
+
+      <div class="form-section" data-form-section="Book">
+        <label>Book</label>
+        <div class="form-input">
+          <input id="book" name="book" type="number" required />
+          <div data-form-error="book"></div>
+        </div>
+      </div>
+    </form>
+  </main>
+
+  <footer>test assignment</footer>
+
+  <script>
+
+    const form = document.querySelector("[data-product-form]");
+    const typeswitch = document.querySelector("[data-product-typeswitch]");
+    const sections = document.querySelectorAll("[data-form-section]");
+
+    typeswitch.addEventListener("change", handleCategorySwitch);
+
+    handleCategorySwitch();
+    function handleCategorySwitch() {
+      sections.forEach(el => {
+        if (el.dataset.formSection === typeswitch.value) {
+          form.appendChild(el);
+        } else {
+          el.remove();
+        }
+      });
+    }
+
+    function saveProduct() {
+      if (!form || !form.reportValidity()) return;
+      const formData = Object.fromEntries(new FormData(form));
+      fetch("add.php", {
+        method: "POST",
+        body: JSON.stringify(formData)
+      })
+        .then((res) => {
+          if (res.ok) {
+            window.location.replace("/");
+          } else {
+            res.json().then(errors => {
+              Object.keys(errors).forEach(field => {
+                let el = document.querySelector(`[data-form-error=${field}]`);
+                if (el) el.innerText = errors[field];
+              })
+            });
+          }
+        })
+        .catch(err => console.error(err))
+    }
+
+    const inputs = document.querySelectorAll("input");
+    inputs.forEach(el => el.addEventListener("keyup", clearFormError(el.name)));
+    function clearFormError(name) {
+      return () => {
+        let errorDiv = document.querySelector(`[data-form-error=${name}]`);
+        if (errorDiv) errorDiv.innerText = "";
+      }
+    }
+
+  </script>
+</body>
+
+</html>

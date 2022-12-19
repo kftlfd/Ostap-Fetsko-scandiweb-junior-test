@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link href="index.css" rel="stylesheet" type="text/css" />
+  <title>Product List</title>
+</head>
+
+<body>
+  <header>
+    <div class="heading">Product List</div>
+    <a href="add.html" class="btn">ADD</a>
+    <button class="btn" onclick="deleteProducts()">MASS DELETE</button>
+  </header>
+
+  <main>
+    <noscript>
+      <h3>Please enable JavaScript</h3>
+    </noscript>
+
+    <div class="products-grid" data-products></div>
+  </main>
+
+  <footer>test assignment</footer>
+
+  <script>
+
+    const products = document.querySelector("[data-products]");
+
+    loadProducts();
+    function loadProducts() {
+      fetch("list.php")
+        .then((res) => res.json())
+        .then(res => res.forEach(appendProduct))
+        .catch(err => console.error(err));
+    }
+
+    function appendProduct(p) {
+      let product = document.createElement("div");
+      product.classList.add("product");
+
+      let check = document.createElement("input");
+      check.type = "checkbox";
+      check.classList.add("delete-checkbox");
+      check.value = p.id;
+
+      let sku = document.createElement("div");
+      sku.innerText = p.sku;
+
+      let name = document.createElement("div");
+      name.innerText = p.name;
+
+      let price = document.createElement("div");
+      price.innerText = p.price;
+
+      let type = document.createElement("div");
+      type.innerText = p.type;
+
+      let details = document.createElement("div");
+      switch (p.type) {
+        case "DVD":
+          details.innerText = `Size: ${p.size} MB`;
+          break;
+        case "Book":
+          details.innerText = `Weight: ${p.weight} KG`;
+          break;
+        case "Furniture":
+          details.innerText = `Dimensions: ${p.height}x${p.width}x${p.length} CM`;
+        default:
+          break;
+      }
+
+      product.appendChild(check);
+      product.appendChild(sku);
+      product.appendChild(name);
+      product.appendChild(price);
+      product.appendChild(type);
+      product.appendChild(details);
+
+      products.appendChild(product);
+    }
+
+    function deleteProducts() {
+      const checkboxes = document.querySelectorAll(".delete-checkbox:checked");
+      if (checkboxes.length < 1) return;
+
+      const ids = [];
+      checkboxes.forEach(el => ids.push(Number(el.value)));
+
+      fetch("delete.php", {
+        method: "DELETE",
+        body: JSON.stringify(ids),
+      })
+        .then(() => checkboxes.forEach(el => el.parentElement.remove()))
+        .catch(err => console.error(err))
+    }
+
+  </script>
+</body>
+
+</html>
