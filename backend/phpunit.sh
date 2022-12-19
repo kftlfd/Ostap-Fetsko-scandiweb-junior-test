@@ -4,5 +4,5 @@ docker run --rm \
     -w "/app" \
     -v "$dir:/app" \
     --entrypoint "/app/vendor/bin/phpunit" \
-    app/dev \
+    productsdb/dev \
     tests

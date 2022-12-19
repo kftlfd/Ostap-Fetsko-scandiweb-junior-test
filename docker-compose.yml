@@ -2,7 +2,7 @@ version: "3"
 
 services:
   web:
-    image: app/dev
+    image: productsdb/dev
     build:
       context: .
       dockerfile: app.dev.Dockerfile
@@ -49,7 +49,7 @@ services:
       - react
 
   dist:
-    image: app/build
+    image: productsdb/build
     build:
       context: .
       dockerfile: app.build.Dockerfile

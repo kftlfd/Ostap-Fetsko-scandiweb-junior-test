@@ -2,7 +2,7 @@ version: "3"
 
 services:
   web:
-    image: app/build
+    image: productsdb/build
     build:
       context: .
       dockerfile: app.build.Dockerfile

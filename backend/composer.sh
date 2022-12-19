@@ -4,4 +4,4 @@ docker run --rm -it \
     -w "/app" \
     -v "$dir:/app" \
     --entrypoint "/usr/bin/composer" \
-    app/dev $@
+    productsdb/dev $@
