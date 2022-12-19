@@ -1,6 +1,6 @@
 export * as default from "./Nodes";
 
-export type NodeElement = HTMLElement | HTMLElement[] | NodeElement[];
+export type NodeElement = HTMLElement | NodeElement[];
 
 export interface Component<Props> {
   (props: Props, children?: NodeElement): NodeElement;

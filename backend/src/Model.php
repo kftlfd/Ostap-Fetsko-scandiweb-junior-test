@@ -290,7 +290,7 @@ abstract class Model
         foreach ($this->data as $key => $info) {
             $arr[$key] = $info[self::FIELD_VALUE];
         }
-        unset($arr["id"]);
+        unset($arr[static::ID_FIELD]);
         return $arr;
     }
 

@@ -94,7 +94,7 @@ class Product extends Model
         $errors = parent::validate();
 
         // Check if product's SKU is unique on creation
-        if (!isset($this->id)) {
+        if (isset($this->sku) && !isset($this->id)) {
             $inDB = static::find(["sku" => $this->sku]);
             if (!empty($inDB)) $errors["sku"] = "SKU '$this->sku' is already in the database.";
         }
