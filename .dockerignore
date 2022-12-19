@@ -1,6 +1,8 @@
 backend/config/schema.sql
 backend/vendor
 backend/index.*
+backend/tests/
+backend/phpunit.sh
 
 frontend/dist
 frontend/node_modules
