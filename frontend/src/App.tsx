@@ -55,11 +55,9 @@ export function Main(props: { children: React.ReactNode }) {
 function Footer(props: {}) {
   return (
     <footer>
-      <span>Scandiweb Test Assignment</span>
+      <span>Products DB</span>
       <span>&bull;</span>
-      <a href="mailto:o.fetsko@gmail.com">Ostap Fetsko</a>
-      <span>&bull;</span>
-      <a href="https://github.com/kftlfd" target={"_blank"}>
+      <a href="https://github.com/kftlfd/productsdb" target={"_blank"}>
         GitHub
       </a>
     </footer>

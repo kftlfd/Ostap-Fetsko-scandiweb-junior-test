@@ -1,10 +1,6 @@
-### https://elaborate-buys.000webhostapp.com/
+# Products Database
 
-### Ostap Fetsko ・ o.fetsko@gmail.com
-
-# Junior Developer Test Task
-
-Web-app with product-list page and product-add page.
+https://elaborate-buys.000webhostapp.com/
 
 **Backend**: PHP v7.2, MySQL v5.7
 

@@ -130,7 +130,7 @@ export default class List extends React.Component<ListProps, ListState> {
 
   renderHeader = () => (
     <Header
-      heading="ProductList"
+      heading="Products List"
       middle={
         <button
           className="refresh-btn"
