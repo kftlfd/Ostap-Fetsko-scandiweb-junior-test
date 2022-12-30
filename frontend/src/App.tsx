@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -7,8 +7,9 @@ import {
   useNavigate,
   Link,
 } from "react-router-dom";
-import List from "./List";
-import Add from "./Add";
+
+const List = React.lazy(() => import("./List"));
+const Add = React.lazy(() => import("./Add"));
 
 export default function App() {
   return (
@@ -23,14 +24,25 @@ function AppRouter() {
   const navigate = useNavigate();
 
   return (
-    <Routes>
-      <Route path="/" element={<List />} />
-      <Route path="/index.html" element={<Navigate to="/" />} />
-      <Route path="/add-product" element={<Add navigate={navigate} />} />
-      <Route path="*" element={<Error />} />
-    </Routes>
+    <Suspense fallback={<PageLoading />}>
+      <Routes>
+        <Route path="/" element={<List />} />
+        <Route path="/index.html" element={<Navigate to="/" />} />
+        <Route path="/add-product" element={<Add navigate={navigate} />} />
+        <Route path="*" element={<Error />} />
+      </Routes>
+    </Suspense>
   );
 }
+
+const PageLoading = () => (
+  <>
+    <Header heading="Products" />
+    <Main>
+      <h3>Loading...</h3>
+    </Main>
+  </>
+);
 
 export function Header(props: {
   heading: string;
