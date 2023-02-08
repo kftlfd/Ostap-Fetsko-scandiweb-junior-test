@@ -1,0 +1,17 @@
+{
+  "name": "nodes",
+  "version": "1.0.0",
+  "description": "Pseudo-react lib",
+  "main": "lib/index.js",
+  "types": "lib/d/index.d.ts",
+  "license": "GPL-3.0-only",
+  "scripts": {
+    "build": "tsc"
+  },
+  "files": [
+    "lib/*"
+  ],
+  "devDependencies": {
+    "typescript": "^4.9.4"
+  }
+}

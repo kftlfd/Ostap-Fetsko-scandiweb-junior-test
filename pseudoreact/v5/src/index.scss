@@ -1,0 +1,293 @@
+$color-bg: #fff;
+$color-text: #333;
+$color-accent: royalblue;
+$border-radius: 3px;
+
+@mixin main-spacing {
+  margin-block: 2rem;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  --page-max-width: 900px;
+  --page-min-padding-inline: 1rem;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  font-family: Arial, Helvetica, sans-serif;
+  color: $color-text;
+}
+
+#appRoot {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+header,
+main,
+footer {
+  padding-inline: max(
+    var(--page-min-padding-inline, 0),
+    calc((100vw - var(--page-max-width, 100vw)) / 2)
+  );
+}
+
+header,
+footer {
+  box-shadow: 0 0 8px 1px #888;
+}
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  column-gap: 2rem;
+  row-gap: 0.5rem;
+  padding-block: 2rem 1rem;
+  background-color: $color-bg;
+
+  .heading {
+    margin: 0;
+    font-size: 2rem;
+  }
+
+  .middle,
+  .right {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+  }
+
+  .middle {
+    flex-grow: 1;
+  }
+}
+
+main {
+  flex-grow: 1;
+}
+
+footer {
+  text-align: center;
+  padding-block: 1rem;
+
+  p {
+    margin: 0;
+  }
+}
+
+h3 {
+  text-align: center;
+  @include main-spacing;
+}
+
+.btn {
+  display: block;
+  padding: 0.4rem 0.6rem;
+  background-color: $color-accent;
+  border: none;
+  border-radius: $border-radius;
+  color: $color-bg;
+  text-decoration: none;
+  font-family: inherit;
+  font-size: medium;
+  font-weight: 500;
+  cursor: pointer;
+
+  &.btn-danger {
+    background-color: tomato;
+  }
+  &.btn-success {
+    background-color: #54ce54;
+  }
+
+  &:hover {
+    opacity: 0.85;
+  }
+  &:active {
+    opacity: 0.7;
+  }
+  &:focus {
+    outline: 2px solid $color-accent;
+    outline-offset: 2px;
+  }
+}
+
+.refresh-btn {
+  align-self: center;
+  padding: 0.4rem;
+  margin: 0;
+  border: none;
+  border-radius: 50%;
+  background-color: $color-bg;
+  cursor: pointer;
+  img {
+    display: block;
+    aspect-ratio: 1;
+    height: 1.4rem;
+    opacity: 0.4;
+  }
+
+  &:hover {
+    background-color: #eee;
+    img {
+      opacity: 0.6;
+    }
+  }
+  &:active {
+    background-color: #ccc;
+    img {
+      opacity: 0.9;
+    }
+  }
+  &:focus {
+    outline: 2px solid $color-accent;
+    img {
+      opacity: 0.6;
+    }
+  }
+}
+
+@mixin fancy-checkboxes {
+  .delete-checkbox {
+    position: absolute;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    background-color: $color-bg;
+    box-shadow: 0 0 10px 10px $color-bg;
+    &:checked,
+    &:hover,
+    &:focus {
+      opacity: 1;
+    }
+  }
+  &:hover,
+  &:focus {
+    .delete-checkbox {
+      opacity: 1;
+    }
+  }
+  .delete-checkbox-label {
+    inset: 0;
+    z-index: 0;
+  }
+  & div {
+    z-index: 1;
+  }
+}
+
+.productsGrid {
+  @include main-spacing;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+
+  .product {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 1rem;
+    border-radius: $border-radius;
+    box-shadow: 0 2px 5px 1px #aaa;
+    @include fancy-checkboxes;
+
+    & div {
+      word-break: break-all;
+      text-align: center;
+    }
+
+    .delete-checkbox {
+      align-self: flex-start;
+      margin: 0;
+      aspect-ratio: 1;
+      height: 1.2rem;
+      accent-color: royalblue;
+      cursor: pointer;
+      &:focus {
+        outline: 2px solid royalblue;
+        outline-offset: 2px;
+      }
+    }
+
+    .delete-checkbox-label {
+      opacity: 0;
+      user-select: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  }
+}
+
+.productForm {
+  @include main-spacing;
+  display: grid;
+  grid-template-columns: 1fr 4fr;
+  row-gap: 1.5rem;
+  column-gap: 3rem;
+
+  label {
+    margin-top: 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  .form-input {
+    display: flex;
+    flex-direction: column;
+
+    input,
+    select {
+      padding: 0.6rem;
+      border: 1px solid #888;
+      border-radius: $border-radius;
+      background-color: $color-bg;
+      font-size: 1rem;
+      &:focus {
+        outline: 2px solid royalblue;
+      }
+    }
+
+    .form-error {
+      color: red;
+      font-weight: bold;
+    }
+  }
+
+  .category-description {
+    grid-column: span 2;
+    font-weight: bold;
+  }
+
+  @media screen and (max-width: 500px) {
+    grid-template-columns: auto;
+    row-gap: 0;
+
+    label:first-child {
+      margin-top: 0;
+    }
+    label:not(:first-child) {
+      margin-top: 1.5rem;
+    }
+    .form-input {
+      margin-top: 0.3rem;
+    }
+
+    .category.description {
+      grid-column: unset;
+      margin-top: 1.5rem;
+    }
+  }
+}

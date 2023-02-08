@@ -2,6 +2,7 @@ dist
 vendor
 node_modules
 .db
+pseudoreact/**/lib
 
 _*.rest
 _*.sh
