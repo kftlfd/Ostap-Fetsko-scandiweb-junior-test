@@ -13,6 +13,9 @@ https://elaborate-buys.000webhostapp.com/
 ### Install dependencies:
 
 ```shell
+### build docker image
+$ docker build -t productsdb/dev -f app.dev.Dockerfile .
+
 $ chmod +x backend/composer.sh frontend/yarn.sh # make files executable
 $ backend/composer.sh install                   # install PHP dependencies
 $ frontend/yarn.sh install                      # install Node dependencies
