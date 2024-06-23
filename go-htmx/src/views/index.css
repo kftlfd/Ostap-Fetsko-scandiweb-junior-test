@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.form-field {
+    @apply grid grid-cols-[100px,1fr]
+}
+
+.form-input {
+    @apply px-4 py-2 border-gray-600 rounded active:border-gray-900 bg-white
+}

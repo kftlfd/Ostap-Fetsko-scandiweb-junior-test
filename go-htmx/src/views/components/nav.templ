@@ -1,0 +1,19 @@
+package components
+
+templ Nav(children ...templ.Component) {
+	<nav class="py-5 flex justify-between items-center gap-4 border-b border-black">
+		<div class="flex items-center gap-4">
+			<div class="text-xl">ProductsDB</div>
+			<div class="htmx-indicator h-4 w-4 inline-block border-2 border-blue-900 border-b-gray-50 animate-spin rounded-full"></div>
+		</div>
+		<div class="flex items-center gap-4">
+			for _, child := range children {
+				@child
+			}
+		</div>
+	</nav>
+}
+
+templ NavLink(label, to string) {
+	<a href={ templ.SafeURL(to) } class="inline-block py-1 px-3 rounded bg-orange-600 text-white">{ label }</a>
+}

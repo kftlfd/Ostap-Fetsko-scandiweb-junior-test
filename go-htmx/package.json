@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "tw": "tailwindcss build -i src/views/index.css -o static/tailwind.css --watch",
+    "tw:build": "tailwindcss build -i src/views/index.css -o static/tailwind.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.4"
+  }
+}

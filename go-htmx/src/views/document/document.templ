@@ -1,0 +1,22 @@
+package document
+
+templ Page(children ...templ.Component) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<title>Products DB</title>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon"/>
+			<link href="/static/tailwind.css" rel="stylesheet"/>
+			<script src="https://unpkg.com/htmx.org@1.9.10" defer></script>
+		</head>
+		<body class="min-h-screen bg-zinc-100">
+			<div class="box-content max-w-5xl m-auto px-4">
+				for _, child := range children {
+					@child
+				}
+			</div>
+		</body>
+	</html>
+}

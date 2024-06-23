@@ -1,0 +1,13 @@
+package pages
+
+import "productsdb/src/views/components"
+import "productsdb/src/views/document"
+
+templ Add() {
+	@document.Page(
+		components.Nav(
+			components.NavLink("Home", "/"),
+		),
+		components.ProductForm(),
+	)
+}

@@ -1,0 +1,17 @@
+package pages
+
+import "productsdb/src/models"
+import "productsdb/src/views/components"
+import "productsdb/src/views/document"
+
+templ Show(products []models.ProductRow) {
+	@document.Page(
+		components.DeleteForm(
+			components.Nav(
+				components.DelBtn(),
+				components.NavLink("Add", "/add"),
+			),
+			components.Products(products),
+		),
+	)
+}

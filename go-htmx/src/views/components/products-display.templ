@@ -1,0 +1,55 @@
+package components
+
+import "productsdb/src/models"
+import "strconv"
+import "fmt"
+
+func fl(num float64) string {
+	return strconv.FormatFloat(num, 'f', 2, 64)
+}
+
+templ DeleteForm(nav templ.Component, formContent templ.Component) {
+	<form hx-post="/delete" hx-target="#products-display">
+		@nav
+		<main id="products-display" class="py-10">
+			@formContent
+		</main>
+	</form>
+}
+
+templ DelBtn() {
+	<button type="submit" class="inline-block py-1 px-3 rounded bg-red-900 text-white">Delete</button>
+}
+
+templ Products(products []models.ProductRow) {
+	if len(products) < 1 {
+		<h3 class="text-center">No products</h3>
+	} else {
+		<div class="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-3">
+			for _, p := range products {
+				@product(p)
+			}
+		</div>
+	}
+}
+
+templ product(p models.ProductRow) {
+	<label class="border border-solid border-black rounded p-4 grid grid-cols-[min-content_1fr] content-baseline gap-x-2 group/p relative bg-white">
+		<input type="checkbox" name="product-id" value={ fmt.Sprintf("%v", p.Id) } class="absolute top-2 right-2 opacity-0 checked:opacity-100 group-hover/p:opacity-100"/>
+		<span>SKU:</span> <span>{ p.Sku }</span>
+		<span>Name:</span> <span>{ p.Name }</span>
+		<span>Price:</span> <span>{ fl(p.Price) }</span>
+		<span>Type:</span> <span>{ p.Type }</span>
+		if p.Type == "dvd" {
+			<span>Size:</span> <span>{ fl(p.Size) } MB</span>
+		}
+		if (p.Type == "book") {
+			<span>Weight:</span> <span>{ fl(p.Weight) } KG</span>
+		}
+		if (p.Type == "furniture") {
+			<span>Width:</span> <span>{ fl(p.Width) } CM</span>
+			<span>Length:</span> <span>{ fl(p.Length) } CM</span>
+			<span>Height:</span> <span>{ fl(p.Height) } CM</span>
+		}
+	</label>
+}

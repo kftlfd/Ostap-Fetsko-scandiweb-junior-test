@@ -1,0 +1,5 @@
+node_modules
+.air
+
+*.sqlite3
+*_templ.go
