@@ -1,58 +1,49 @@
-import React from "react";
+import { FC, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import type { ProductInfo, ProductCategory } from "./api";
 import { getProductsList, deleteProducts } from "./api";
-import { Header, Main } from "./App";
+import { Header, Main } from "./Layout";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   currency: "USD",
   style: "currency",
 });
 
-type ProductDescriptions = {
-  [K in ProductCategory]: (p: ProductInfo) => React.ReactNode;
-};
-
-type ListProps = {};
 type ListState = {
   error: null | string;
   loading: boolean;
   data: ProductInfo[];
 };
-export default class List extends React.Component<ListProps, ListState> {
-  constructor(props: ListProps) {
-    super(props);
-    this.state = {
-      error: null,
-      loading: true,
-      data: [],
-    };
-  }
 
-  componentDidMount(): void {
-    document.title = "Products List";
-    this.fetchProducts();
-  }
+export default function List() {
+  const [state, setState] = useState<ListState>({
+    error: null,
+    loading: true,
+    data: [],
+  });
 
-  fetchProducts = () => {
+  const fetchProducts = () => {
+    setState({ loading: true, error: null, data: [] });
     getProductsList()
       .then((res) => {
-        this.setState({
+        setState({
           loading: false,
+          error: null,
           data: res.sort((a, b) => b.id - a.id),
         });
       })
       .catch((err: Error) => {
-        this.setState({
+        setState({
           loading: false,
           error: "Failed to load",
+          data: [],
         });
         console.error(err);
       });
   };
 
-  handleDelete = () => {
+  const handleDelete = () => {
     let deleteIds: number[] = [];
 
     document.querySelectorAll(".delete-checkbox").forEach((el: Element) => {
@@ -65,33 +56,105 @@ export default class List extends React.Component<ListProps, ListState> {
 
     deleteProducts(deleteIds)
       .then(() =>
-        this.setState((prev) => ({
+        setState((prev) => ({
+          ...prev,
           data: prev.data.filter((p) => !deleteIds.includes(p.id)),
         }))
       )
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        alert("Error");
+        console.error(err);
+      });
   };
 
-  handleRefresh = () => {
-    this.setState({ loading: true });
-    this.fetchProducts();
-  };
+  useEffect(() => {
+    document.title = "Products List";
+    fetchProducts();
+  }, []);
 
-  ProductsGrid = () => (
+  return (
     <>
-      {this.state.data.length < 1 ? (
+      <Header
+        heading="Products List"
+        middle={
+          <button
+            className="refresh-btn"
+            aria-label="Refresh"
+            disabled={state.loading}
+            onClick={fetchProducts}
+          />
+        }
+        buttons={
+          <>
+            <Link to="/add-product" className="btn">
+              ADD
+            </Link>
+            <button className="btn" onClick={handleDelete}>
+              MASS DELETE
+            </button>
+          </>
+        }
+      />
+
+      <Main>
+        {state.loading ? (
+          <h3>Loading...</h3>
+        ) : (
+          <>
+            {state.error && <h3>{state.error}</h3>}
+            <ProductsGrid products={state.data} />
+          </>
+        )}
+      </Main>
+    </>
+  );
+}
+
+type ProductDescriptionComponent = FC<{ p: ProductInfo }>;
+
+const DVDDescription: ProductDescriptionComponent = ({ p }) => (
+  <div>Size: {p.size} MB</div>
+);
+
+const FurnitureDescription: ProductDescriptionComponent = ({ p }) => (
+  <div>
+    Dimensions: {p.height}x{p.width}x{p.length}
+  </div>
+);
+
+const BookDescription: ProductDescriptionComponent = ({ p }) => (
+  <div>Weight: {p.weight}KG</div>
+);
+
+const productDescriptions: Record<
+  ProductCategory,
+  ProductDescriptionComponent
+> = {
+  DVD: DVDDescription,
+  Furniture: FurnitureDescription,
+  Book: BookDescription,
+};
+
+function ProductsGrid(props: { products: ProductInfo[] }) {
+  return (
+    <>
+      {props.products.length < 1 ? (
         <h3>No products</h3>
       ) : (
         <div className="productGrid">
-          {this.state.data.map((p) => (
-            <this.ProductCard key={p.id} p={p} />
+          {props.products.map((p) => (
+            <ProductCard key={p.id} p={p} />
           ))}
         </div>
       )}
     </>
   );
+}
 
-  ProductCard = (props: { p: ProductInfo }) => (
+function ProductCard(props: { p: ProductInfo }) {
+  const Description = productDescriptions[props.p.type];
+
+  return (
     <div className="product">
       <input
         id={"delete-" + props.p.id}
@@ -108,68 +171,7 @@ export default class List extends React.Component<ListProps, ListState> {
       <div>{props.p.sku}</div>
       <div>{props.p.name}</div>
       <div>{currencyFormatter.format(props.p.price)}</div>
-      {this.productDescriptions[props.p.type](props.p)}
+      <Description p={props.p} />
     </div>
   );
-
-  productDescriptions: ProductDescriptions = {
-    DVD: (p: ProductInfo) => <div>Size: {p.size} MB</div>,
-
-    Furniture: (p: ProductInfo) => (
-      <div>
-        Dimensions: {p.height}x{p.width}x{p.length}
-      </div>
-    ),
-
-    Book: (p: ProductInfo) => <div>Weight: {p.weight}KG</div>,
-  };
-
-  Loading = () => <h3>Loading...</h3>;
-
-  Error = () => <h3>{this.state.error}</h3>;
-
-  renderHeader = () => (
-    <Header
-      heading="Products List"
-      middle={
-        <button
-          className="refresh-btn"
-          aria-label="Refresh"
-          onClick={this.handleRefresh}
-        />
-      }
-      buttons={
-        <>
-          <Link to="/add-product" className="btn">
-            ADD
-          </Link>
-          <button className="btn" onClick={this.handleDelete}>
-            MASS DELETE
-          </button>
-        </>
-      }
-    />
-  );
-
-  renderMain = () => (
-    <Main>
-      {this.state.loading ? (
-        <this.Loading />
-      ) : (
-        <>
-          {this.state.error && <this.Error />}
-          <this.ProductsGrid />
-        </>
-      )}
-    </Main>
-  );
-
-  render(): React.ReactNode {
-    return (
-      <>
-        {this.renderHeader()}
-        {this.renderMain()}
-      </>
-    );
-  }
 }

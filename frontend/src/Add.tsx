@@ -1,10 +1,9 @@
-import React from "react";
-import type { NavigateFunction } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { FC, forwardRef, useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 import type { ProductInfo, ProductCategory } from "./api";
 import { productCategories, addProduct, InvalidFormError } from "./api";
-import { Header, Main } from "./App";
+import { Header, Main } from "./Layout";
 
 type Choose<T, O> = { [P in keyof O]: O[P] extends T ? P : never }[keyof O];
 type Override<O, T> = { [P in keyof O]: T };
@@ -19,35 +18,33 @@ type FormErrors = Override<Partial<FormData>, string>;
 
 type FormEl = HTMLFormElement & Override<FormData, { value: string }>;
 
-type CategoryFields = { [P in ProductCategory]: React.ReactNode };
-
-type AddProps = {
-  navigate: NavigateFunction;
-};
 type AddState = {
   error: null | string;
   category: ProductCategory;
   formErrors: FormErrors;
 };
-export default class Add extends React.Component<AddProps, AddState> {
-  formRef: React.RefObject<FormEl>;
 
-  constructor(props: AddProps) {
-    super(props);
-    this.state = {
-      error: null,
-      category: "DVD",
-      formErrors: {},
-    };
-    this.formRef = React.createRef();
-  }
+export default function Add() {
+  const navigate = useNavigate();
 
-  componentDidMount(): void {
+  const [state, setState] = useState<AddState>({
+    error: null,
+    category: "DVD",
+    formErrors: {},
+  });
+
+  const formRef = useRef<FormEl>(null);
+
+  useEffect(() => {
     document.title = "Product Add";
-  }
+  }, []);
 
-  handleSubmit = () => {
-    const form = this.formRef.current;
+  const handleChangeCategory = (newValue: ProductCategory) => {
+    setState((prev) => ({ ...prev, category: newValue }));
+  };
+
+  const handleSubmit = () => {
+    const form = formRef.current;
     if (!form) return;
 
     // trim string fields
@@ -64,27 +61,58 @@ export default class Add extends React.Component<AddProps, AddState> {
     const data = Object.fromEntries(fd);
 
     addProduct(data)
-      .then(() => this.props.navigate("/"))
+      .then(() => navigate("/"))
       .catch((err: Error) => {
         if (err instanceof InvalidFormError) {
-          this.setState({ formErrors: err.getErrors() });
+          setState((prev) => ({ ...prev, formErrors: err.getErrors() }));
         } else {
-          this.setState({ error: "Error: " + err.message });
+          setState((prev) => ({ ...prev, error: "Error: " + err.message }));
           console.error(err);
         }
       });
   };
 
-  InputTextField = (props: {
-    field: FormTextField;
-    label: string;
-    options?: {
-      required?: boolean;
-      placeholder?: string;
-      pattern?: string;
-      title?: string;
-    };
-  }) => (
+  return (
+    <>
+      <Header
+        heading="Product Add"
+        buttons={
+          <>
+            <button className="btn" onClick={handleSubmit}>
+              Save
+            </button>
+            <Link to="/" className="btn">
+              Cancel
+            </Link>
+          </>
+        }
+      />
+
+      <Main>
+        {state.error && <h3>{state.error}</h3>}
+        <ProductForm
+          ref={formRef}
+          category={state.category}
+          onCategoryChange={handleChangeCategory}
+          formErrors={state.formErrors}
+        />
+      </Main>
+    </>
+  );
+}
+
+function InputTextField(props: {
+  field: FormTextField;
+  label: string;
+  options?: {
+    required?: boolean;
+    placeholder?: string;
+    pattern?: string;
+    title?: string;
+  };
+  error?: string;
+}) {
+  return (
     <>
       <label htmlFor={props.field}>{props.label}</label>
 
@@ -99,26 +127,27 @@ export default class Add extends React.Component<AddProps, AddState> {
           required={props.options?.required ?? true}
         />
 
-        {this.state.formErrors[props.field] && (
-          <div className="formError">{this.state.formErrors[props.field]}</div>
-        )}
+        {props.error && <div className="formError">{props.error}</div>}
       </div>
     </>
   );
+}
 
-  InputNumberField = (props: {
-    field: FormNumberField;
-    label: string;
-    options?: {
-      required?: boolean;
-      placeholder?: string;
-      min?: number;
-      max?: number;
-      step?: number;
-      defVal?: number;
-      title?: string;
-    };
-  }) => (
+function InputNumberField(props: {
+  field: FormNumberField;
+  label: string;
+  options?: {
+    required?: boolean;
+    placeholder?: string;
+    min?: number;
+    max?: number;
+    step?: number;
+    defVal?: number;
+    title?: string;
+  };
+  error?: string;
+}) {
+  return (
     <>
       <label htmlFor={props.field}>{props.label}</label>
 
@@ -136,14 +165,18 @@ export default class Add extends React.Component<AddProps, AddState> {
           required={props.options?.required ?? true}
         />
 
-        {this.state.formErrors[props.field] && (
-          <div className="formError">{this.state.formErrors[props.field]}</div>
-        )}
+        {props.error && <div className="formError">{props.error}</div>}
       </div>
     </>
   );
+}
 
-  CategorySwitch = () => (
+function CategorySwitch(props: {
+  value: ProductCategory;
+  onChange: (newValue: ProductCategory) => void;
+  error?: string;
+}) {
+  return (
     <>
       <label htmlFor="productType">Type Switcher</label>
 
@@ -151,10 +184,8 @@ export default class Add extends React.Component<AddProps, AddState> {
         <select
           id="productType"
           name="type"
-          defaultValue={productCategories[0]}
-          onChange={(e) =>
-            this.setState({ category: e.target.value as ProductCategory })
-          }
+          defaultValue={props.value}
+          onChange={(e) => props.onChange(e.target.value as ProductCategory)}
         >
           {productCategories.map((id: ProductCategory) => (
             <option key={id} value={id}>
@@ -163,16 +194,93 @@ export default class Add extends React.Component<AddProps, AddState> {
           ))}
         </select>
 
-        {this.state.formErrors["type"] && (
-          <div className="formError">{this.state.formErrors["type"]}</div>
-        )}
+        {props.error && <div className="formError">{props.error}</div>}
       </div>
     </>
   );
+}
 
-  ProductForm = () => (
-    <form id="product_form" className="productForm" ref={this.formRef}>
-      <this.InputTextField
+type CategorySpecificFields = FC<{ formErrors?: FormErrors }>;
+
+const DVDCategoryFields: CategorySpecificFields = ({ formErrors }) => (
+  <>
+    <div className="categoryDescription">Please, provide size</div>
+    <InputNumberField
+      field="size"
+      label="Size (MB)"
+      options={{ title: "Please, provide size", placeholder: "Size 0.00" }}
+      error={formErrors?.size}
+    />
+  </>
+);
+
+const FurnitureCategoryFields: CategorySpecificFields = ({ formErrors }) => (
+  <>
+    <div className="categoryDescription">Please, provide dimensions</div>
+    <InputNumberField
+      field="height"
+      label="Height (CM)"
+      options={{
+        title: "Please, provide height",
+        placeholder: "Height 0.00",
+      }}
+      error={formErrors?.height}
+    />
+    <InputNumberField
+      field="width"
+      label="Width (CM)"
+      options={{
+        title: "Please, provide width",
+        placeholder: "Width 0.00",
+      }}
+      error={formErrors?.width}
+    />
+    <InputNumberField
+      field="length"
+      label="Length (CM)"
+      options={{
+        title: "Please, provide length",
+        placeholder: "Length 0.00",
+      }}
+      error={formErrors?.length}
+    />
+  </>
+);
+
+const BookCategoryFields: CategorySpecificFields = ({ formErrors }) => (
+  <>
+    <div className="categoryDescription">Please, provide weight</div>
+    <InputNumberField
+      field="weight"
+      label="Weight (KG)"
+      options={{
+        title: "Please, provide weight",
+        placeholder: "Weight 0.00",
+      }}
+      error={formErrors?.weight}
+    />
+  </>
+);
+
+const categoryFields: Record<ProductCategory, CategorySpecificFields> = {
+  DVD: DVDCategoryFields,
+  Furniture: FurnitureCategoryFields,
+  Book: BookCategoryFields,
+};
+
+const ProductForm = forwardRef<
+  FormEl,
+  {
+    category: ProductCategory;
+    onCategoryChange: (newVal: ProductCategory) => void;
+    formErrors?: FormErrors;
+  }
+>((props, ref) => {
+  const CategoryFields = categoryFields[props.category];
+
+  return (
+    <form id="product_form" className="productForm" ref={ref}>
+      <InputTextField
         field="sku"
         label="SKU"
         options={{
@@ -181,8 +289,9 @@ export default class Add extends React.Component<AddProps, AddState> {
           title:
             "Please use only a-zA-Z0-9_ without spaces (up to 100 characters)",
         }}
+        error={props.formErrors?.sku}
       />
-      <this.InputTextField
+      <InputTextField
         field="name"
         label="Name"
         options={{
@@ -191,107 +300,22 @@ export default class Add extends React.Component<AddProps, AddState> {
           title:
             "Allowed characters: a-zA-Z0-9!@#$%&*()-_,.:; and spaces (up to 250 characters)",
         }}
+        error={props.formErrors?.name}
       />
-      <this.InputNumberField
+      <InputNumberField
         field="price"
         label="Price"
         options={{ placeholder: "Product price $0.00" }}
+        error={props.formErrors?.price}
       />
 
-      <this.CategorySwitch />
+      <CategorySwitch
+        value={props.category}
+        onChange={props.onCategoryChange}
+        error={props.formErrors?.type}
+      />
 
-      {this.categoryFields[this.state.category]}
+      <CategoryFields formErrors={props.formErrors} />
     </form>
   );
-
-  categoryFields: CategoryFields = {
-    DVD: (
-      <>
-        <div className="categoryDescription">Please, provide size</div>
-        <this.InputNumberField
-          field="size"
-          label="Size (MB)"
-          options={{ title: "Please, provide size", placeholder: "Size 0.00" }}
-        />
-      </>
-    ),
-
-    Furniture: (
-      <>
-        <div className="categoryDescription">Please, provide dimensions</div>
-        <this.InputNumberField
-          field="height"
-          label="Height (CM)"
-          options={{
-            title: "Please, provide height",
-            placeholder: "Height 0.00",
-          }}
-        />
-        <this.InputNumberField
-          field="width"
-          label="Width (CM)"
-          options={{
-            title: "Please, provide width",
-            placeholder: "Width 0.00",
-          }}
-        />
-        <this.InputNumberField
-          field="length"
-          label="Length (CM)"
-          options={{
-            title: "Please, provide length",
-            placeholder: "Length 0.00",
-          }}
-        />
-      </>
-    ),
-
-    Book: (
-      <>
-        <div className="categoryDescription">Please, provide weight</div>
-        <this.InputNumberField
-          field="weight"
-          label="Weight (KG)"
-          options={{
-            title: "Please, provide weight",
-            placeholder: "Weight 0.00",
-          }}
-        />
-      </>
-    ),
-  };
-
-  Error = () => <h3>{this.state.error}</h3>;
-
-  renderHeader = () => (
-    <Header
-      heading="Product Add"
-      buttons={
-        <>
-          <button className="btn" onClick={this.handleSubmit}>
-            Save
-          </button>
-          <Link to="/" className="btn">
-            Cancel
-          </Link>
-        </>
-      }
-    />
-  );
-
-  renderMain = () => (
-    <Main>
-      {this.state.error && <this.Error />}
-      <this.ProductForm />
-    </Main>
-  );
-
-  render(): React.ReactNode {
-    return (
-      <>
-        {this.renderHeader()}
-        {this.renderMain()}
-      </>
-    );
-  }
-}
+});
