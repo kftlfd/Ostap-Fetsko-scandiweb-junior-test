@@ -1,0 +1,24 @@
+services:
+  app:
+    image: productsdb-devcontainer
+    build: .
+    volumes:
+      - ..:/workspaces/productsdb:cached
+    ports:
+      - 80:80
+      - 8080:8080
+      - 5173:5173
+
+  mysql:
+    image: mysql:5.7-debian
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+    env_file:
+      - ../backend/config/db.env
+    volumes:
+      - ../backend/config/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - mysql-db:/var/lib/mysql
+
+volumes:
+  mysql-db:
